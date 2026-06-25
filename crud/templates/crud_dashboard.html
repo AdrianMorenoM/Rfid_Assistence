@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administración RFID — ITSOEH</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800&family=Barlow:wght@400;600&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --tecnm:#11366A;--tecnm-light:#1A4A8A;--tecnm-30:rgba(17,54,106,.30);
+  --itsoeh-t:#00828A;--itsoeh-t-12:rgba(0,130,138,.12);--itsoeh-t-30:rgba(0,130,138,.30);
+  --sky:#2297D3;--sky-12:rgba(34,151,211,.12);--sky-25:rgba(34,151,211,.25);--sky-50:rgba(34,151,211,.5);
+  --crimson:#8F162E;--crimson-12:rgba(143,22,46,.12);--crimson-25:rgba(143,22,46,.25);
+  --amber:#E8A020;--amber-12:rgba(232,160,32,.12);--amber-25:rgba(232,160,32,.25);
+  --green:#22C55E;--green-12:rgba(34,197,94,.12);--green-25:rgba(34,197,94,.25);
+  --bg:#05090F;--s1:#080E17;--s2:#0D1520;--s3:#121C2B;
+  --brd:#141E2E;--brd2:#1C2A3E;--brd3:#253649;
+  --tx:#E4EBF5;--tx-dim:#7A90AD;--tx-muted:#3D5268;
+  --display:'Barlow Condensed',sans-serif;--body:'Barlow',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--tx);font-family:var(--body);min-height:100%;-webkit-font-smoothing:antialiased}
+
+/* ── HEADER ── */
+header{
+  position:sticky;top:0;z-index:200;
+  height:72px;display:grid;grid-template-columns:220px 1fr auto;
+  background:var(--s1);border-bottom:1px solid var(--brd);
+}
+header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--tecnm) 0%,var(--tecnm) 25%,var(--itsoeh-t) 25%,var(--itsoeh-t) 50%,var(--sky) 50%,var(--sky) 75%,var(--crimson) 75%,var(--crimson) 100%)}
+.h-brand{background:var(--tecnm);display:flex;flex-direction:column;justify-content:center;padding:0 20px;gap:3px;position:relative;overflow:hidden}
+.h-brand::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-55deg,rgba(255,255,255,.02) 0px,rgba(255,255,255,.02) 1px,transparent 1px,transparent 24px);pointer-events:none}
+.h-brand-name{font-family:var(--display);font-size:20px;font-weight:800;color:#fff;letter-spacing:2px}
+.h-brand-sub{font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.5);letter-spacing:2px;text-transform:uppercase}
+
+.h-center{display:flex;align-items:center;justify-content:center;gap:16px;padding:0 24px}
+.h-title{font-family:var(--display);font-size:20px;font-weight:800;color:var(--tx);letter-spacing:3px;text-transform:uppercase}
+.h-search-wrap{flex:1;max-width:400px}
+.h-search{
+  width:100%;padding:8px 14px;
+  background:var(--s2);border:1px solid var(--brd2);border-radius:5px;
+  font-family:var(--body);font-size:13px;color:var(--tx);
+  transition:border-color .2s;
+}
+.h-search:focus{outline:none;border-color:var(--sky)}
+.h-search::placeholder{color:var(--tx-muted)}
+
+.h-right{display:flex;align-items:center;gap:16px;padding:0 20px}
+.h-clock{font-family:var(--mono);font-size:18px;font-weight:700;color:#fff;letter-spacing:2px;font-variant-numeric:tabular-nums}
+.h-date{font-family:var(--mono);font-size:7px;color:var(--tx-muted);letter-spacing:1px;text-align:right}
+
+/* ── STATS BAR ── */
+.stats-bar{background:var(--s1);border-bottom:1px solid var(--brd);display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--brd)}
+.stat-cell{background:var(--s1);padding:14px 20px;position:relative}
+.stat-cell::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--sc)}
+.stat-cell.sky{--sc:var(--sky)}.stat-cell.teal{--sc:var(--itsoeh-t)}.stat-cell.amber{--sc:var(--amber)}.stat-cell.crimson{--sc:var(--crimson)}.stat-cell.green{--sc:var(--green)}
+.stat-val{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--sc);line-height:1;font-variant-numeric:tabular-nums;transition:all .3s}
+.stat-lbl{font-family:var(--display);font-size:9px;font-weight:700;color:var(--tx-dim);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+
+/* ── TABS ── */
+.tabs{display:flex;background:var(--s1);border-bottom:1px solid var(--brd);padding:0 24px;gap:2px}
+.tab{padding:12px 20px;background:transparent;border:none;border-bottom:2px solid transparent;font-family:var(--display);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx-muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+.tab.active{color:var(--sky);border-bottom-color:var(--sky)}
+.tab:hover:not(.active){color:var(--tx-dim)}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* ── MAIN ── */
+main{padding:24px;max-width:1600px;margin:0 auto}
+
+/* ── SECTION HEADER ── */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.sec-title{font-family:var(--display);font-size:16px;font-weight:800;color:var(--tx);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.sec-title::before{content:'';width:3px;height:18px;background:var(--sky);border-radius:2px;flex-shrink:0}
+.sec-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── BUTTONS ── */
+.btn{padding:8px 16px;border:none;border-radius:4px;font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-primary{background:var(--sky);color:#fff}.btn-primary:hover{background:#1A85C0}
+.btn-secondary{background:var(--s3);color:var(--tx-dim);border:1px solid var(--brd2)}.btn-secondary:hover{background:var(--s2)}
+.btn-danger{background:var(--crimson-12);color:var(--crimson);border:1px solid var(--crimson-25)}
+.btn-success{background:var(--green-12);color:var(--green);border:1px solid var(--green-25)}
+.btn-sm{padding:5px 10px;font-size:9px}
+
+/* ── FILTERS ── */
+.filters{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.f-select,.f-input{padding:8px 12px;background:var(--s2);border:1px solid var(--brd2);border-radius:4px;font-family:var(--body);font-size:12px;color:var(--tx)}
+.f-select:focus,.f-input:focus{outline:none;border-color:var(--sky)}
+.f-input{flex:1;min-width:160px}
+
+/* ── TABLE ── */
+.tbl-wrap{background:var(--s2);border:1px solid var(--brd);border-radius:6px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--s3)}
+th{padding:11px 14px;text-align:left;font-family:var(--display);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tx-dim);border-bottom:1px solid var(--brd);white-space:nowrap}
+td{padding:11px 14px;font-family:var(--body);font-size:13px;color:var(--tx);border-bottom:1px solid var(--brd);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{cursor:pointer;transition:background .12s}
+tbody tr:hover{background:var(--s3)}
+.td-mono{font-family:var(--mono);font-size:11px}
+.badge{display:inline-block;padding:3px 8px;border-radius:3px;font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.badge.activo,.badge.aceptado{background:var(--sky-12);color:var(--sky)}
+.badge.inactivo,.badge.rebote{background:var(--crimson-12);color:var(--crimson)}
+.badge.ya_escaneado{background:var(--amber-12);color:var(--amber)}
+
+/* Mini avatar in table */
+.tbl-av{display:flex;align-items:center;gap:10px}
+.mini-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:11px;font-weight:800;flex-shrink:0;border:1px solid rgba(255,255,255,.06)}
+.tbl-name{font-family:var(--display);font-size:14px;font-weight:700;color:var(--tx)}
+.tbl-sub{font-family:var(--mono);font-size:9px;color:var(--tx-muted);margin-top:1px}
+
+/* ── PAGINACIÓN ── */
+.pagination{display:flex;align-items:center;gap:8px;margin-top:14px;justify-content:center}
+.page-btn{padding:6px 12px;background:var(--s2);border:1px solid var(--brd2);border-radius:4px;font-family:var(--mono);font-size:10px;color:var(--tx-dim);cursor:pointer;transition:all .2s}
+.page-btn:hover{border-color:var(--sky);color:var(--sky)}
+.page-btn.active{background:var(--sky-12);border-color:var(--sky);color:var(--sky)}
+.page-btn:disabled{opacity:.35;cursor:not-allowed}
+.page-info{font-family:var(--mono);font-size:9px;color:var(--tx-muted);letter-spacing:1px}
+
+/* ── GRUPOS ── */
+.grupos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.grupo-card{background:var(--s2);border:1px solid var(--brd);border-radius:6px;overflow:hidden}
+.grupo-head{padding:12px 16px;background:var(--s3);border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center}
+.grupo-sem{font-family:var(--display);font-size:18px;font-weight:800;color:var(--sky)}
+.grupo-meta{font-family:var(--display);font-size:10px;color:var(--tx-dim);text-align:right}
+.grupo-count{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--itsoeh-t)}
+.grupo-body{padding:8px}
+.gs-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;transition:background .12s}
+.gs-row:hover{background:var(--s3)}
+.gs-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:11px;font-weight:800;flex-shrink:0;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+.gs-av img{width:100%;height:100%;object-fit:cover}
+.gs-name{font-family:var(--display);font-size:13px;font-weight:700;color:var(--tx);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gs-mat{font-family:var(--mono);font-size:8px;color:var(--tx-muted)}
+.gs-tag{font-family:var(--mono);font-size:8px;padding:2px 6px;border-radius:2px;background:var(--sky-12);color:var(--sky);flex-shrink:0}
+
+/* ── ANALYTICS ── */
+.analytics-grid{display:grid;gap:14px;margin-bottom:14px}
+.analytics-grid.cols2{grid-template-columns:1fr 1fr}
+.analytics-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+.chart-card{background:var(--s2);border:1px solid var(--brd);border-radius:6px;padding:18px}
+.chart-title{font-family:var(--display);font-size:12px;font-weight:800;color:var(--tx);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.chart-title::before{content:'';width:3px;height:14px;background:var(--sky);border-radius:1px}
+.chart-wrap{position:relative;height:180px}
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.kpi{background:var(--s2);border:1px solid var(--brd);border-radius:6px;padding:14px 16px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--kc)}
+.kpi.sky{--kc:var(--sky)}.kpi.teal{--kc:var(--itsoeh-t)}.kpi.green{--kc:var(--green)}
+.kpi-val{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--kc);line-height:1;font-variant-numeric:tabular-nums}
+.kpi-lbl{font-family:var(--display);font-size:9px;color:var(--tx-dim);letter-spacing:2px;text-transform:uppercase;margin-top:5px}
+.kpi-sub{font-family:var(--mono);font-size:9px;color:var(--tx-muted);margin-top:3px}
+.attendance-bar-wrap{margin-top:8px}
+.attendance-bar-bg{height:6px;background:var(--brd2);border-radius:3px;overflow:hidden}
+.attendance-bar-fill{height:100%;background:linear-gradient(90deg,var(--itsoeh-t),var(--sky));border-radius:3px;transition:width .6s ease}
+.absent-list{max-height:200px;overflow-y:auto}
+.absent-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--brd)}
+.absent-row:last-child{border-bottom:none}
+
+/* ── RFID ADMIN ── */
+.rfid-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.rfid-panel{background:var(--s2);border:1px solid var(--brd);border-radius:6px;overflow:hidden}
+.rfid-ph{padding:12px 16px;background:var(--s3);border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center;font-family:var(--display);font-size:12px;font-weight:800;color:var(--tx);letter-spacing:2px;text-transform:uppercase}
+.rfid-pb{padding:12px;max-height:360px;overflow-y:auto}
+.rfid-pb::-webkit-scrollbar{width:3px}
+.rfid-pb::-webkit-scrollbar-thumb{background:var(--brd3)}
+.uid-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--s1);border:1px solid var(--brd);border-radius:4px;margin-bottom:6px}
+.uid-val{font-family:var(--mono);font-size:11px;color:var(--sky);letter-spacing:2px}
+.uid-meta{font-family:var(--mono);font-size:8px;color:var(--tx-muted);margin-top:2px}
+.scan-live{display:flex;align-items:center;gap:12px;padding:14px;background:var(--s1);border:1px solid var(--brd);border-radius:6px;margin-bottom:14px}
+.scan-live-dot{width:8px;height:8px;border-radius:50%;background:var(--itsoeh-t);animation:pulse 1.5s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+.scan-live-uid{font-family:var(--mono);font-size:14px;color:var(--sky);letter-spacing:3px}
+.scan-live-time{font-family:var(--mono);font-size:9px;color:var(--tx-muted)}
+
+/* ── MODAL ── */
+.modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);align-items:center;justify-content:center}
+.modal.show{display:flex}
+.modal-box{background:var(--s1);border:1px solid var(--brd2);border-radius:8px;width:90%;max-width:580px;max-height:90vh;overflow-y:auto}
+.modal-hd{padding:18px 22px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:var(--display);font-size:16px;font-weight:800;color:var(--tx);letter-spacing:2px;text-transform:uppercase}
+.modal-close{background:none;border:none;color:var(--tx-dim);font-size:22px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:4px}
+.modal-close:hover{background:var(--s3);color:var(--tx)}
+.modal-bd{padding:22px}
+.modal-ft{padding:14px 22px;border-top:1px solid var(--brd);display:flex;gap:10px;justify-content:flex-end}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--tx-muted);margin-bottom:6px}
+.form-input,.form-select{width:100%;padding:10px 14px;background:var(--s2);border:1px solid var(--brd2);border-radius:4px;font-family:var(--body);font-size:13px;color:var(--tx);transition:border-color .2s}
+.form-input:focus,.form-select:focus{outline:none;border-color:var(--sky)}
+.form-select option{background:var(--s2)}
+.foto-preview{margin-top:8px;display:none}
+.foto-preview img{max-width:100px;border-radius:50%;border:2px solid var(--brd2)}
+
+/* ── PROFILE DRAWER ── */
+.profile-overlay{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.5)}
+.profile-overlay.show{display:block}
+.profile-drawer{
+  position:fixed;top:0;right:0;bottom:0;z-index:901;
+  width:420px;background:var(--s1);border-left:1px solid var(--brd2);
+  transform:translateX(100%);transition:transform .25s ease;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.profile-drawer.show{transform:translateX(0)}
+.profile-drawer-hd{
+  padding:20px 22px;border-bottom:1px solid var(--brd);
+  display:flex;align-items:center;gap:14px;flex-shrink:0;
+}
+.profile-big-av{
+  width:64px;height:64px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:24px;font-weight:800;
+  flex-shrink:0;border:2px solid var(--sky-25);overflow:hidden;
+}
+.profile-big-av img{width:100%;height:100%;object-fit:cover}
+.profile-hd-info{flex:1;min-width:0}
+.profile-hd-name{font-family:var(--display);font-size:18px;font-weight:800;color:var(--tx);line-height:1.2}
+.profile-hd-mat{font-family:var(--mono);font-size:10px;color:var(--tx-muted);letter-spacing:1px;margin-top:3px}
+.profile-close{background:none;border:none;color:var(--tx-dim);font-size:22px;cursor:pointer;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center}
+.profile-body{flex:1;overflow-y:auto;padding:20px 22px}
+.profile-body::-webkit-scrollbar{width:3px}
+.profile-body::-webkit-scrollbar-thumb{background:var(--brd3)}
+.profile-section{margin-bottom:20px}
+.profile-section-title{font-family:var(--mono);font-size:8px;color:var(--tx-muted);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--brd)}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.profile-field{display:flex;flex-direction:column;gap:2px}
+.profile-field-lbl{font-family:var(--mono);font-size:7.5px;color:var(--tx-muted);letter-spacing:2px;text-transform:uppercase}
+.profile-field-val{font-family:var(--display);font-size:14px;font-weight:600;color:var(--tx)}
+.profile-kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.profile-kpi{background:var(--s2);border:1px solid var(--brd);border-radius:5px;padding:12px;text-align:center}
+.profile-kpi-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--sky);font-variant-numeric:tabular-nums}
+.profile-kpi-lbl{font-family:var(--mono);font-size:7px;color:var(--tx-muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:3px}
+.history-list{display:flex;flex-direction:column;gap:4px;max-height:250px;overflow-y:auto}
+.history-item{display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--s2);border:1px solid var(--brd);border-radius:4px;position:relative;overflow:hidden}
+.history-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--hi-c)}
+.history-item.aceptado{--hi-c:var(--sky)}.history-item.ya_escaneado{--hi-c:var(--amber)}.history-item.rebote{--hi-c:var(--crimson)}
+.hi-date{font-family:var(--mono);font-size:9px;color:var(--tx-dim);font-variant-numeric:tabular-nums;flex-shrink:0}
+.hi-type{font-family:var(--mono);font-size:8px;text-transform:uppercase;letter-spacing:1px;flex:1}
+.hi-type.aceptado{color:var(--sky)}.hi-type.ya_escaneado{color:var(--amber)}.hi-type.rebote{color:var(--crimson)}
+.hi-uid{font-family:var(--mono);font-size:8px;color:var(--tx-muted);letter-spacing:1px}
+
+/* ── CONFIRM MODAL ── */
+.confirm-box{background:var(--s1);border:1px solid var(--brd2);border-radius:8px;width:340px;padding:24px}
+.confirm-title{font-family:var(--display);font-size:16px;font-weight:800;color:var(--tx);margin-bottom:8px;letter-spacing:1px}
+.confirm-msg{font-family:var(--body);font-size:13px;color:var(--tx-dim);margin-bottom:20px;line-height:1.5}
+.confirm-actions{display:flex;gap:10px;justify-content:flex-end}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;z-index:9999;background:var(--s1);border:1px solid var(--brd2);border-radius:6px;padding:11px 16px;font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--tx);box-shadow:0 8px 32px rgba(0,0,0,.6);transform:translateY(60px);opacity:0;transition:all .25s cubic-bezier(.16,1,.3,1);max-width:300px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-left:3px solid var(--itsoeh-t)}
+.toast.err{border-left:3px solid var(--crimson)}
+
+/* ── EMPTY ── */
+.empty{padding:40px 20px;text-align:center}
+.empty-icon{font-size:32px;opacity:.2;margin-bottom:10px}
+.empty-txt{font-family:var(--display);font-size:11px;color:var(--tx-muted);letter-spacing:1.5px;text-transform:uppercase}
+
+/* scrollbars */
+*::-webkit-scrollbar{width:4px;height:4px}
+*::-webkit-scrollbar-thumb{background:var(--brd3);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+    <div class="h-brand">
+        <div class="h-brand-name">TECNM</div>
+        <div class="h-brand-sub">ITSOEH — Sistema RFID</div>
+    </div>
+    <div class="h-center">
+        <div class="h-title">ADMINISTRACIÓN</div>
+        <div class="h-search-wrap">
+            <input class="h-search" id="global-search" type="text"
+                   placeholder="Buscar estudiante, matrícula, UID..."
+                   oninput="globalSearch(this.value)">
+        </div>
+    </div>
+    <div class="h-right">
+        <div>
+            <div class="h-clock" id="clock">--:--:--</div>
+            <div class="h-date" id="date">-- -- ----</div>
+        </div>
+    </div>
+</header>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+    <div class="stat-cell sky"><div class="stat-val" id="s-total">–</div><div class="stat-lbl">Estudiantes</div></div>
+    <div class="stat-cell teal"><div class="stat-val" id="s-activos">–</div><div class="stat-lbl">Activos</div></div>
+    <div class="stat-cell amber"><div class="stat-val" id="s-tarjetas">–</div><div class="stat-lbl">Tarjetas activas</div></div>
+    <div class="stat-cell crimson"><div class="stat-val" id="s-hoy">–</div><div class="stat-lbl">Registros hoy</div></div>
+    <div class="stat-cell green"><div class="stat-val" id="s-acep">–</div><div class="stat-lbl">Aceptados hoy</div></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs" id="tabs">
+    <button class="tab active" data-tab="estudiantes">Estudiantes</button>
+    <button class="tab" data-tab="grupos">Por Semestre</button>
+    <button class="tab" data-tab="tarjetas">Tarjetas RFID</button>
+    <button class="tab" data-tab="registros">Registros</button>
+    <button class="tab" data-tab="rfid">Admin RFID</button>
+    <button class="tab" data-tab="analytics">Analitica</button>
+</div>
+
+<main>
+<!-- TAB ESTUDIANTES -->
+<div id="tab-estudiantes" class="tab-content active">
+    <div class="sec-head">
+        <div class="sec-title">Estudiantes</div>
+        <div class="sec-actions">
+            <button class="btn btn-secondary" onclick="cargarEstudiantes()">Refrescar</button>
+            <button class="btn btn-secondary" onclick="window.location.href='/api/export/estudiantes'">Exportar CSV</button>
+            <button class="btn btn-primary" onclick="abrirModalEst()">Nuevo estudiante</button>
+        </div>
+    </div>
+    <div class="filters">
+        <select class="f-select" id="f-sem" onchange="cargarEstudiantes()">
+            <option value="">Todos los semestres</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option>
+            <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+        </select>
+        <input class="f-input" id="f-buscar" type="text" placeholder="Filtrar por nombre o matrícula..." oninput="debounceSearch()">
+    </div>
+    <div class="tbl-wrap">
+        <table>
+            <thead><tr>
+                <th style="width:40px"></th>
+                <th>Nombre</th>
+                <th>Matrícula</th>
+                <th>Semestre</th>
+                <th>Grupo</th>
+                <th>Estado</th>
+                <th>Tarjetas</th>
+                <th style="width:100px">Acciones</th>
+            </tr></thead>
+            <tbody id="tbody-est"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- TAB GRUPOS -->
+<div id="tab-grupos" class="tab-content">
+    <div class="sec-head">
+        <div class="sec-title">Por Semestre</div>
+        <div class="sec-actions">
+            <button class="btn btn-secondary" onclick="cargarGrupos()">Refrescar</button>
+        </div>
+    </div>
+    <div class="grupos-grid" id="grupos-grid">
+        <div class="empty"><div class="empty-txt">Cargando...</div></div>
+    </div>
+</div>
+
+<!-- TAB TARJETAS -->
+<div id="tab-tarjetas" class="tab-content">
+    <div class="sec-head">
+        <div class="sec-title">Tarjetas RFID</div>
+        <div class="sec-actions">
+            <button class="btn btn-success btn-sm" onclick="bulkToggle(1)">Activar selección</button>
+            <button class="btn btn-danger btn-sm" onclick="bulkToggle(0)">Desactivar selección</button>
+            <button class="btn btn-primary" onclick="abrirModalTarj()">Asignar tarjeta</button>
+        </div>
+    </div>
+    <div class="tbl-wrap">
+        <table>
+            <thead><tr>
+                <th><input type="checkbox" id="chk-all" onchange="toggleAll(this)"></th>
+                <th>UID</th>
+                <th>Estudiante</th>
+                <th>Matrícula</th>
+                <th>Estado</th>
+                <th>Asignada</th>
+                <th style="width:100px">Acciones</th>
+            </tr></thead>
+            <tbody id="tbody-tarj"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- TAB REGISTROS -->
+<div id="tab-registros" class="tab-content">
+    <div class="sec-head">
+        <div class="sec-title">Registros</div>
+        <div class="sec-actions">
+            <input type="date" class="f-select" id="f-fecha-reg" onchange="cargarRegistros(1)">
+            <select class="f-select" id="f-estado-reg" onchange="cargarRegistros(1)">
+                <option value="">Todos los estados</option>
+                <option value="aceptado">Aceptados</option>
+                <option value="ya_escaneado">Ya escaneados</option>
+                <option value="rebote">Rebotes</option>
+            </select>
+            <button class="btn btn-secondary" onclick="exportarRegistros()">Exportar CSV</button>
+        </div>
+    </div>
+    <div class="tbl-wrap">
+        <table>
+            <thead><tr>
+                <th>Hora</th>
+                <th>Estudiante</th>
+                <th>Matrícula</th>
+                <th>UID</th>
+                <th>Estado</th>
+                <th>Mensaje</th>
+            </tr></thead>
+            <tbody id="tbody-reg"></tbody>
+        </table>
+    </div>
+    <div class="pagination" id="reg-pagination"></div>
+</div>
+
+<!-- TAB RFID ADMIN -->
+<div id="tab-rfid" class="tab-content">
+    <div class="sec-head"><div class="sec-title">Administración RFID</div></div>
+
+    <div class="scan-live" id="scan-live">
+        <div class="scan-live-dot"></div>
+        <div style="flex:1">
+            <div style="font-family:var(--mono);font-size:8px;color:var(--tx-muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">Ultimo escaneo detectado</div>
+            <div class="scan-live-uid" id="scan-uid">—</div>
+            <div class="scan-live-time" id="scan-time">esperando...</div>
+        </div>
+        <button class="btn btn-primary btn-sm" id="btn-asignar-scan" onclick="asignarUltimoScan()" style="display:none">Asignar este UID</button>
+    </div>
+
+    <div class="rfid-grid">
+        <div class="rfid-panel">
+            <div class="rfid-ph">UIDs sin asignar <button class="btn btn-secondary btn-sm" onclick="cargarDesconocidos()">Actualizar</button></div>
+            <div class="rfid-pb" id="panel-desc"><div class="empty"><div class="empty-txt">Cargando...</div></div></div>
+        </div>
+        <div class="rfid-panel">
+            <div class="rfid-ph">Historial por UID</div>
+            <div style="padding:10px 14px;border-bottom:1px solid var(--brd);display:flex;gap:8px">
+                <input class="f-input" id="h-uid" placeholder="Ingresa un UID..." style="flex:1">
+                <button class="btn btn-secondary btn-sm" onclick="cargarHistorial()">Buscar</button>
+            </div>
+            <div class="rfid-pb" id="panel-hist"><div class="empty"><div class="empty-txt">Ingresa un UID</div></div></div>
+        </div>
+    </div>
+
+    <div style="margin-top:14px;padding:14px;background:var(--s2);border:1px solid var(--brd);border-radius:6px;display:flex;align-items:center;gap:14px">
+        <div style="flex:1">
+            <div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--tx-muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">Mantenimiento</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--tx-muted)">Aplica columnas nuevas si no existen en la base de datos</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="runMigrate()">Aplicar migraciones</button>
+    </div>
+</div>
+
+<!-- TAB ANALYTICS -->
+<div id="tab-analytics" class="tab-content">
+    <div class="sec-head">
+        <div class="sec-title">Analitica</div>
+        <button class="btn btn-secondary" onclick="cargarAnalytics()">Actualizar</button>
+    </div>
+
+    <!-- KPIs principales -->
+    <div class="kpi-row">
+        <div class="kpi sky">
+            <div class="kpi-val" id="k-hoy">–</div>
+            <div class="kpi-lbl">Aceptados hoy</div>
+            <div class="kpi-sub" id="k-hoy-sub">de – estudiantes activos</div>
+        </div>
+        <div class="kpi teal">
+            <div class="kpi-val" id="k-tasa">–%</div>
+            <div class="kpi-lbl">Tasa de asistencia</div>
+            <div class="attendance-bar-wrap">
+                <div class="attendance-bar-bg"><div class="attendance-bar-fill" id="k-bar" style="width:0%"></div></div>
+            </div>
+        </div>
+        <div class="kpi green">
+            <div class="kpi-val" id="k-mes">–</div>
+            <div class="kpi-lbl">Accesos este mes</div>
+            <div class="kpi-sub" id="k-mes-sub">mes actual</div>
+        </div>
+    </div>
+
+    <div class="analytics-grid cols2">
+        <div class="chart-card" style="grid-column:1/-1">
+            <div class="chart-title">Asistencia — ultimos 7 dias</div>
+            <div class="chart-wrap"><canvas id="c-dias"></canvas></div>
+        </div>
+    </div>
+
+    <div class="analytics-grid cols2">
+        <div class="chart-card">
+            <div class="chart-title">Distribucion por carrera</div>
+            <div class="chart-wrap"><canvas id="c-carrera"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">Accesos por hora — hoy</div>
+            <div class="chart-wrap"><canvas id="c-horas"></canvas></div>
+        </div>
+    </div>
+
+    <div class="analytics-grid cols2">
+        <div class="chart-card">
+            <div class="chart-title">Top 10 — mayor asistencia</div>
+            <div class="tbl-wrap" style="max-height:230px;overflow-y:auto">
+                <table>
+                    <thead><tr><th>#</th><th>Estudiante</th><th>Sem.</th><th>Visitas</th></tr></thead>
+                    <tbody id="t-top"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">Sin asistencia hoy</div>
+            <div class="absent-list" id="absent-list">
+                <div class="empty"><div class="empty-txt">Cargando...</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+</main>
+
+<!-- MODAL ESTUDIANTE -->
+<div id="modal-est" class="modal">
+    <div class="modal-box">
+        <div class="modal-hd">
+            <div class="modal-title" id="modal-est-title">Nuevo estudiante</div>
+            <button class="modal-close" onclick="cerrarModalEst()">×</button>
+        </div>
+        <div class="modal-bd">
+            <input type="hidden" id="est-id">
+            <input type="hidden" id="est-foto-actual">
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">Nombre</label>
+                <input class="form-input" id="est-nombre" placeholder="Nombre(s)">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Apellido paterno</label>
+                    <input class="form-input" id="est-ap">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apellido materno</label>
+                    <input class="form-input" id="est-am">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Matricula</label>
+                    <input class="form-input" id="est-mat">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Correo</label>
+                    <input class="form-input" type="email" id="est-correo">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Carrera</label>
+                    <input class="form-input" id="est-carrera" value="ITIC's">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Semestre</label>
+                    <select class="form-select" id="est-semestre">
+                        <option>1</option><option>2</option><option>3</option><option>4</option>
+                        <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Grupo</label>
+                    <input class="form-input" id="est-grupo" placeholder="A, B, C...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Estado</label>
+                    <select class="form-select" id="est-estado">
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Foto</label>
+                <input class="form-input" type="file" id="est-foto" accept="image/*" onchange="prevFoto(event)">
+                <div class="foto-preview" id="foto-prev"><img id="foto-prev-img"></div>
+            </div>
+        </div>
+        <div class="modal-ft">
+            <button class="btn btn-secondary" onclick="cerrarModalEst()">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarEst()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL TARJETA -->
+<div id="modal-tarj" class="modal">
+    <div class="modal-box">
+        <div class="modal-hd">
+            <div class="modal-title" id="modal-tarj-title">Asignar tarjeta</div>
+            <button class="modal-close" onclick="cerrarModalTarj()">×</button>
+        </div>
+        <div class="modal-bd">
+            <input type="hidden" id="tarj-id">
+            <div class="form-group">
+                <label class="form-label">UID de la tarjeta</label>
+                <input class="form-input td-mono" id="tarj-uid" placeholder="p.ej. 369301586877">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Estudiante</label>
+                <select class="form-select" id="tarj-est"><option value="">Seleccionar...</option></select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Estado</label>
+                <select class="form-select" id="tarj-activa">
+                    <option value="1">Activa</option><option value="0">Inactiva</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-ft">
+            <button class="btn btn-secondary" onclick="cerrarModalTarj()">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarTarj()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="modal-confirm" class="modal">
+    <div class="confirm-box">
+        <div class="confirm-title" id="confirm-title">Confirmar accion</div>
+        <div class="confirm-msg" id="confirm-msg"></div>
+        <div class="confirm-actions">
+            <button class="btn btn-secondary" onclick="confirmResolve(false)">Cancelar</button>
+            <button class="btn btn-danger" id="confirm-ok" onclick="confirmResolve(true)">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<!-- PROFILE DRAWER -->
+<div class="profile-overlay" id="prof-overlay" onclick="cerrarPerfil()"></div>
+<div class="profile-drawer" id="prof-drawer">
+    <div class="profile-drawer-hd">
+        <div class="profile-big-av" id="prof-av"></div>
+        <div class="profile-hd-info">
+            <div class="profile-hd-name" id="prof-name">—</div>
+            <div class="profile-hd-mat" id="prof-mat">—</div>
+        </div>
+        <button class="profile-close" onclick="cerrarPerfil()">×</button>
+    </div>
+    <div class="profile-body">
+        <div class="profile-kpis">
+            <div class="profile-kpi">
+                <div class="profile-kpi-val" id="prof-total">–</div>
+                <div class="profile-kpi-lbl">Asistencias totales</div>
+            </div>
+            <div class="profile-kpi">
+                <div class="profile-kpi-val" id="prof-tarjetas">–</div>
+                <div class="profile-kpi-lbl">Tarjetas asignadas</div>
+            </div>
+        </div>
+        <div class="profile-section">
+            <div class="profile-section-title">Informacion</div>
+            <div class="profile-grid" id="prof-fields"></div>
+        </div>
+        <div class="profile-section">
+            <div class="profile-section-title">Ultimo acceso</div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--tx-dim)" id="prof-ultimo">—</div>
+        </div>
+        <div class="profile-section">
+            <div class="profile-section-title">Historial reciente</div>
+            <div class="history-list" id="prof-history"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+            <button class="btn btn-secondary" style="flex:1" onclick="editarDesdePerfilAbierto()">Editar estudiante</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+Chart.defaults.color = '#7A90AD';
+Chart.defaults.borderColor = '#141E2E';
+Chart.defaults.font.family = "'JetBrains Mono', monospace";
+Chart.defaults.font.size = 10;
+const charts = {};
+function mkChart(id, type, data, opts={}) {
+    if (charts[id]) charts[id].destroy();
+    charts[id] = new Chart(document.getElementById(id), {type, data,
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:10}}},...opts}});
+}
+
+// ── UTILS ──────────────────────────────────────────────────────
+function toast(msg, ok=true) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = `toast ${ok?'ok':'err'}`;
+    setTimeout(()=>t.classList.add('show'),10);
+    setTimeout(()=>t.classList.remove('show'),3200);
+}
+function fmt(ts) { return ts ? new Date(ts).toLocaleString('es-MX') : '—'; }
+function fmtDate(ts) { return ts ? new Date(ts).toLocaleDateString('es-MX') : '—'; }
+
+function getInitials(nombre, apellido) {
+    return ((nombre||'')[0]||'').toUpperCase() + ((apellido||'')[0]||'').toUpperCase() || '?';
+}
+function avatarStyle(str) {
+    const p = [{bg:'rgba(34,151,211,.18)',c:'#2297D3'},{bg:'rgba(0,130,138,.18)',c:'#00828A'},
+               {bg:'rgba(54,57,135,.18)',c:'#363987'},{bg:'rgba(34,49,140,.18)',c:'#22318C'},
+               {bg:'rgba(17,54,106,.25)',c:'#1A4A8A'}];
+    let h=0; for(let ch of str) h=ch.charCodeAt(0)+((h<<5)-h);
+    return p[Math.abs(h)%p.length];
+}
+
+// ── CLOCK ──────────────────────────────────────────────────────
+function updateClock() {
+    const n = new Date();
+    document.getElementById('clock').textContent = n.toLocaleTimeString('es-MX',{hour12:false});
+    document.getElementById('date').textContent  = n.toLocaleDateString('es-MX',{weekday:'short',day:'2-digit',month:'short'}).toUpperCase();
+}
+
+// ── CONFIRM ────────────────────────────────────────────────────
+let confirmResolve = ()=>{};
+function confirmDialog(title, msg, okLabel='Eliminar') {
+    return new Promise(res => {
+        document.getElementById('confirm-title').textContent = title;
+        document.getElementById('confirm-msg').textContent   = msg;
+        document.getElementById('confirm-ok').textContent    = okLabel;
+        document.getElementById('modal-confirm').classList.add('show');
+        confirmResolve = (v) => {
+            document.getElementById('modal-confirm').classList.remove('show');
+            res(v);
+        };
+    });
+}
+
+// ── TABS ───────────────────────────────────────────────────────
+document.getElementById('tabs').addEventListener('click', e => {
+    const btn = e.target.closest('.tab');
+    if (!btn) return;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    if (tab==='grupos')    cargarGrupos();
+    if (tab==='analytics') cargarAnalytics();
+    if (tab==='rfid')      { cargarDesconocidos(); checkUltimoScan(); }
+});
+
+// ── GLOBAL SEARCH ──────────────────────────────────────────────
+let gTimer;
+function globalSearch(v) {
+    clearTimeout(gTimer);
+    gTimer = setTimeout(() => {
+        // Activate estudiantes tab and search
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+        document.querySelector('[data-tab="estudiantes"]').classList.add('active');
+        document.getElementById('tab-estudiantes').classList.add('active');
+        document.getElementById('f-buscar').value = v;
+        cargarEstudiantes();
+    }, 350);
+}
+
+// ── STATS ──────────────────────────────────────────────────────
+async function cargarStats() {
+    const r = await fetch('/api/estadisticas');
+    const d = await r.json();
+    if (!d.success) return;
+    const s = d.stats;
+    document.getElementById('s-total').textContent    = s.total_estudiantes;
+    document.getElementById('s-activos').textContent  = s.estudiantes_activos;
+    document.getElementById('s-tarjetas').textContent = s.tarjetas_activas;
+    document.getElementById('s-hoy').textContent      = s.registros_hoy;
+    document.getElementById('s-acep').textContent     = s.aceptados_hoy;
+}
+
+// ── ESTUDIANTES ────────────────────────────────────────────────
+let debT;
+function debounceSearch() { clearTimeout(debT); debT=setTimeout(cargarEstudiantes,350); }
+
+async function cargarEstudiantes() {
+    const sem    = document.getElementById('f-sem').value;
+    const buscar = document.getElementById('f-buscar').value;
+    let qs = new URLSearchParams();
+    if (sem)    qs.append('semestre',sem);
+    if (buscar) qs.append('buscar',buscar);
+
+    const r = await fetch('/api/estudiantes?'+qs);
+    const d = await r.json();
+    const tb = document.getElementById('tbody-est');
+
+    // Update tarjeta select
+    const sel = document.getElementById('tarj-est');
+    sel.innerHTML = '<option value="">Seleccionar...</option>';
+
+    if (!d.success || !d.estudiantes.length) {
+        tb.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="empty-txt">Sin resultados</div></div></td></tr>`;
+        return;
+    }
+
+    tb.innerHTML = d.estudiantes.map(e => {
+        const ini = getInitials(e.nombre, e.apellido_paterno);
+        const st  = avatarStyle(e.nombre+e.apellido_paterno);
+        const avInner = e.foto
+            ? `<img src="${e.foto}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='<span>${ini}</span>'">`
+            : `<span>${ini}</span>`;
+        return `<tr onclick="abrirPerfil(${e.id})">
+            <td><div class="mini-av" style="background:${st.bg};color:${st.c}">${avInner}</div></td>
+            <td><div class="tbl-name">${e.nombre} ${e.apellido_paterno||''} ${e.apellido_materno||''}</div></td>
+            <td class="td-mono">${e.matricula}</td>
+            <td style="text-align:center">${e.semestre||'—'}</td>
+            <td style="text-align:center">${e.grupo||'—'}</td>
+            <td><span class="badge ${e.estado}">${e.estado}</span></td>
+            <td style="text-align:center">${e.tarjetas_asignadas}</td>
+            <td onclick="event.stopPropagation()">
+                <button class="btn btn-secondary btn-sm" onclick="editarEst(${e.id})">Editar</button>
+                <button class="btn btn-danger btn-sm" onclick="eliminarEst(${e.id},'${e.nombre}')">Quitar</button>
+            </td>
+        </tr>`;
+    }).join('');
+
+    sel.innerHTML += d.estudiantes.map(e=>
+        `<option value="${e.id}">${e.nombre} ${e.apellido_paterno||''} — ${e.matricula}</option>`
+    ).join('');
+}
+
+function abrirModalEst() {
+    ['est-nombre','est-ap','est-am','est-mat','est-correo','est-grupo']
+        .forEach(id=>document.getElementById(id).value='');
+    document.getElementById('est-id').value          = '';
+    document.getElementById('est-foto-actual').value = '';
+    document.getElementById('est-carrera').value     = "ITIC's";
+    document.getElementById('est-semestre').value    = '1';
+    document.getElementById('est-estado').value      = 'activo';
+    document.getElementById('est-foto').value        = '';
+    document.getElementById('foto-prev').style.display = 'none';
+    document.getElementById('modal-est-title').textContent = 'Nuevo estudiante';
+    document.getElementById('modal-est').classList.add('show');
+}
+function cerrarModalEst() { document.getElementById('modal-est').classList.remove('show'); }
+
+async function editarEst(id) {
+    const r = await fetch(`/api/estudiantes/${id}`);
+    const d = await r.json();
+    if (!d.success) return toast('Error al cargar', false);
+    const e = d.estudiante;
+    document.getElementById('est-id').value      = e.id;
+    document.getElementById('est-nombre').value  = e.nombre||'';
+    document.getElementById('est-ap').value      = e.apellido_paterno||'';
+    document.getElementById('est-am').value      = e.apellido_materno||'';
+    document.getElementById('est-mat').value     = e.matricula||'';
+    document.getElementById('est-correo').value  = e.correo||'';
+    document.getElementById('est-carrera').value = e.carrera||"ITIC's";
+    document.getElementById('est-semestre').value= String(e.semestre||'1');
+    document.getElementById('est-grupo').value   = e.grupo||'';
+    document.getElementById('est-estado').value  = e.estado||'activo';
+    document.getElementById('est-foto-actual').value = e.foto||'';
+    if (e.foto) {
+        document.getElementById('foto-prev').style.display='block';
+        document.getElementById('foto-prev-img').src=e.foto;
+    } else {
+        document.getElementById('foto-prev').style.display='none';
+    }
+    document.getElementById('modal-est-title').textContent = 'Editar estudiante';
+    document.getElementById('modal-est').classList.add('show');
+}
+
+// perfil abierto para editar desde drawer
+let perfilAbiertoId = null;
+function editarDesdePerfilAbierto() {
+    cerrarPerfil();
+    if (perfilAbiertoId) editarEst(perfilAbiertoId);
+}
+
+async function guardarEst() {
+    const id        = document.getElementById('est-id').value;
+    const fotoInput = document.getElementById('est-foto');
+    let foto        = document.getElementById('est-foto-actual').value || null;
+
+    if (fotoInput.files && fotoInput.files[0]) {
+        const fd = new FormData();
+        fd.append('foto', fotoInput.files[0]);
+        try {
+            const ur = await fetch('/api/upload-foto', {method:'POST', body:fd});
+            const ud = await ur.json();
+            if (ud.success) foto = ud.foto_url;
+            else return toast('Error subiendo foto: '+ud.error, false);
+        } catch(e) { return toast('Error subiendo foto', false); }
+    }
+
+    const body = {
+        nombre: document.getElementById('est-nombre').value,
+        apellido_paterno: document.getElementById('est-ap').value,
+        apellido_materno: document.getElementById('est-am').value,
+        matricula: document.getElementById('est-mat').value,
+        carrera: document.getElementById('est-carrera').value,
+        semestre: document.getElementById('est-semestre').value,
+        grupo: document.getElementById('est-grupo').value,
+        correo: document.getElementById('est-correo').value,
+        estado: document.getElementById('est-estado').value,
+        foto
+    };
+
+    const url = id ? `/api/estudiantes/${id}` : '/api/estudiantes';
+    const r   = await fetch(url, {method:id?'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+    const d   = await r.json();
+    if (d.success) { cerrarModalEst(); cargarEstudiantes(); cargarStats(); toast(d.mensaje); }
+    else toast(d.error, false);
+}
+
+async function eliminarEst(id, nombre) {
+    const ok = await confirmDialog('Eliminar estudiante', `¿Eliminar a ${nombre}? Esta accion no se puede deshacer.`);
+    if (!ok) return;
+    const r = await fetch(`/api/estudiantes/${id}`, {method:'DELETE'});
+    const d = await r.json();
+    if (d.success) { cargarEstudiantes(); cargarStats(); toast(d.mensaje); }
+    else toast(d.error, false);
+}
+
+function prevFoto(e) {
+    const f = e.target.files[0]; if (!f) return;
+    const fr = new FileReader();
+    fr.onload = ev => { document.getElementById('foto-prev').style.display='block'; document.getElementById('foto-prev-img').src=ev.target.result; };
+    fr.readAsDataURL(f);
+}
+
+// ── PERFIL ─────────────────────────────────────────────────────
+async function abrirPerfil(id) {
+    perfilAbiertoId = id;
+    document.getElementById('prof-overlay').classList.add('show');
+    document.getElementById('prof-drawer').classList.add('show');
+
+    const r = await fetch(`/api/estudiantes/${id}/perfil`);
+    const d = await r.json();
+    if (!d.success) return toast('Error al cargar perfil', false);
+
+    const e  = d.estudiante;
+    const ini = getInitials(e.nombre, e.apellido_paterno);
+    const st  = avatarStyle(e.nombre+e.apellido_paterno);
+
+    const av = document.getElementById('prof-av');
+    av.style.background = st.bg; av.style.color = st.c;
+    if (e.foto) {
+        av.innerHTML = `<img src="${e.foto}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.outerHTML='<span>${ini}</span>'">`;
+    } else { av.textContent = ini; }
+
+    document.getElementById('prof-name').textContent    = `${e.nombre} ${e.apellido_paterno||''} ${e.apellido_materno||''}`.trim();
+    document.getElementById('prof-mat').textContent     = e.matricula || '—';
+    document.getElementById('prof-total').textContent   = d.total_asistencias;
+    document.getElementById('prof-tarjetas').textContent= d.tarjetas.length;
+    document.getElementById('prof-ultimo').textContent  = d.ultimo_acceso ? fmt(d.ultimo_acceso) : 'Sin registros';
+
+    document.getElementById('prof-fields').innerHTML = [
+        ['Carrera',  e.carrera||'—'],
+        ['Semestre', e.semestre||'—'],
+        ['Grupo',    e.grupo||'—'],
+        ['Estado',   e.estado||'—'],
+        ['Correo',   e.correo||'—'],
+        ['Registro', fmtDate(e.created_at)],
+    ].map(([l,v])=>`<div class="profile-field"><div class="profile-field-lbl">${l}</div><div class="profile-field-val">${v}</div></div>`).join('');
+
+    const hist = document.getElementById('prof-history');
+    if (!d.registros.length) {
+        hist.innerHTML = '<div class="empty"><div class="empty-txt">Sin historial</div></div>';
+    } else {
+        hist.innerHTML = d.registros.slice(0,30).map(h=>`
+            <div class="history-item ${h.tipo}">
+                <div class="hi-date">${fmt(h.timestamp).slice(0,16)}</div>
+                <div class="hi-type ${h.tipo}">${h.tipo==='aceptado'?'Aceptado':h.tipo==='ya_escaneado'?'Repetido':'Rebote'}</div>
+                <div class="hi-uid">${h.uid}</div>
+            </div>`).join('');
+    }
+}
+
+function cerrarPerfil() {
+    document.getElementById('prof-overlay').classList.remove('show');
+    document.getElementById('prof-drawer').classList.remove('show');
+    perfilAbiertoId = null;
+}
+
+// ── GRUPOS ─────────────────────────────────────────────────────
+async function cargarGrupos() {
+    const grid = document.getElementById('grupos-grid');
+    grid.innerHTML = '<div class="empty"><div class="empty-txt">Cargando...</div></div>';
+    const r = await fetch('/api/estudiantes/grupos');
+    const d = await r.json();
+    if (!d.success || !d.grupos.length) {
+        grid.innerHTML = '<div class="empty"><div class="empty-txt">Sin grupos</div></div>'; return;
+    }
+    grid.innerHTML = d.grupos.map(g => {
+        const label = g.grupo ? ` · Grupo ${g.grupo}` : '';
+        const rows  = g.estudiantes.map(e => {
+            const ini = getInitials(e.nombre, e.apellido_paterno);
+            const st  = avatarStyle(e.nombre+e.apellido_paterno);
+            const avIn = e.foto
+                ? `<img src="${e.foto}" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.outerHTML='<span>${ini}</span>'">`
+                : `<span>${ini}</span>`;
+            return `<div class="gs-row" onclick="abrirPerfil(${e.id})">
+                <div class="gs-av" style="background:${st.bg};color:${st.c}">${avIn}</div>
+                <div style="flex:1;min-width:0">
+                    <div class="gs-name">${e.nombre} ${e.apellido_paterno||''}</div>
+                    <div class="gs-mat">${e.matricula}</div>
+                </div>
+                ${e.tarjetas_asignadas>0?'<div class="gs-tag">RFID</div>':''}
+            </div>`;
+        }).join('');
+        return `<div class="grupo-card">
+            <div class="grupo-head">
+                <div>
+                    <div class="grupo-sem">SEM. ${g.semestre}</div>
+                    <div style="font-family:var(--mono);font-size:8px;color:var(--tx-muted);letter-spacing:1px">${g.carrera}${label}</div>
+                </div>
+                <div style="text-align:right">
+                    <div class="grupo-count">${g.estudiantes.length}</div>
+                    <div class="grupo-meta">alumnos</div>
+                </div>
+            </div>
+            <div class="grupo-body">${rows}</div>
+        </div>`;
+    }).join('');
+}
+
+// ── TARJETAS ───────────────────────────────────────────────────
+async function cargarTarjetas() {
+    const r = await fetch('/api/tarjetas');
+    const d = await r.json();
+    const tb = document.getElementById('tbody-tarj');
+    if (!d.success || !d.tarjetas.length) {
+        tb.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-txt">Sin tarjetas</div></div></td></tr>'; return;
+    }
+    tb.innerHTML = d.tarjetas.map(t=>`<tr>
+        <td><input type="checkbox" class="chk-tarj" value="${t.id}"></td>
+        <td class="td-mono" style="color:var(--sky)">${t.uid}</td>
+        <td>${t.estudiante_nombre||'<span style="color:var(--crimson)">Sin asignar</span>'}</td>
+        <td class="td-mono">${t.matricula||'—'}</td>
+        <td><span class="badge ${t.activa?'activo':'inactivo'}">${t.activa?'Activa':'Inactiva'}</span></td>
+        <td class="td-mono" style="font-size:10px">${new Date(t.asignada_en).toLocaleDateString('es-MX')}</td>
+        <td>
+            <button class="btn btn-secondary btn-sm" onclick="editarTarj(${t.id})">Editar</button>
+            <button class="btn btn-danger btn-sm" onclick="eliminarTarj(${t.id})">Quitar</button>
+        </td>
+    </tr>`).join('');
+}
+
+function toggleAll(chk) { document.querySelectorAll('.chk-tarj').forEach(c=>c.checked=chk.checked); }
+
+async function bulkToggle(activa) {
+    const ids=[...document.querySelectorAll('.chk-tarj:checked')].map(c=>parseInt(c.value));
+    if(!ids.length) return toast('Selecciona al menos una tarjeta',false);
+    const r=await fetch('/api/tarjetas/bulk-toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ids,activa})});
+    const d=await r.json();
+    if(d.success){cargarTarjetas();cargarStats();toast(d.mensaje);}else toast(d.error,false);
+}
+
+function abrirModalTarj() {
+    document.getElementById('tarj-id').value='';
+    document.getElementById('tarj-uid').value='';
+    document.getElementById('tarj-est').value='';
+    document.getElementById('tarj-activa').value='1';
+    document.getElementById('modal-tarj-title').textContent='Asignar tarjeta';
+    document.getElementById('modal-tarj').classList.add('show');
+}
+function cerrarModalTarj(){document.getElementById('modal-tarj').classList.remove('show');}
+
+async function editarTarj(id){
+    const r=await fetch('/api/tarjetas');const d=await r.json();
+    const t=d.tarjetas.find(x=>x.id===id);if(!t)return;
+    document.getElementById('tarj-id').value=t.id;
+    document.getElementById('tarj-uid').value=t.uid;
+    document.getElementById('tarj-est').value=t.id_estudiante||'';
+    document.getElementById('tarj-activa').value=t.activa;
+    document.getElementById('modal-tarj-title').textContent='Editar tarjeta';
+    document.getElementById('modal-tarj').classList.add('show');
+}
+
+async function guardarTarj(){
+    const id=document.getElementById('tarj-id').value;
+    const body={uid:document.getElementById('tarj-uid').value,
+                id_estudiante:document.getElementById('tarj-est').value||null,
+                activa:parseInt(document.getElementById('tarj-activa').value)};
+    const url=id?`/api/tarjetas/${id}`:'/api/tarjetas';
+    const r=await fetch(url,{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(d.success){cerrarModalTarj();cargarTarjetas();cargarStats();toast(d.mensaje);}else toast(d.error,false);
+}
+
+async function eliminarTarj(id){
+    const ok=await confirmDialog('Eliminar tarjeta','Esta accion no se puede deshacer.','Eliminar');
+    if(!ok)return;
+    const r=await fetch(`/api/tarjetas/${id}`,{method:'DELETE'});
+    const d=await r.json();
+    if(d.success){cargarTarjetas();cargarStats();toast(d.mensaje);}else toast(d.error,false);
+}
+
+// ── REGISTROS ──────────────────────────────────────────────────
+let regPaginaActual = 1;
+const REG_POR_PAGINA = 25;
+
+async function cargarRegistros(page=regPaginaActual) {
+    regPaginaActual = page;
+    const fecha  = document.getElementById('f-fecha-reg').value;
+    const estado = document.getElementById('f-estado-reg').value;
+    const offset = (page-1)*REG_POR_PAGINA;
+
+    let qs = new URLSearchParams({limit:REG_POR_PAGINA, offset});
+    if (fecha)  qs.append('fecha',fecha);
+    if (estado) qs.append('estado',estado);
+
+    const r = await fetch('/api/registros?'+qs);
+    const d = await r.json();
+    const tb = document.getElementById('tbody-reg');
+
+    if (!d.success || !d.registros.length) {
+        tb.innerHTML='<tr><td colspan="6"><div class="empty"><div class="empty-txt">Sin registros</div></div></td></tr>';
+        document.getElementById('reg-pagination').innerHTML='';
+        return;
+    }
+
+    tb.innerHTML = d.registros.map(r=>{
+        const ini = getInitials(r.estudiante_nombre,'');
+        const st  = avatarStyle(r.estudiante_nombre);
+        const avIn = r.foto
+            ? `<img src="${r.foto}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+            : `<span>${ini}</span>`;
+        return `<tr>
+            <td class="td-mono" style="font-size:10px">${fmt(r.timestamp).slice(11,16)}</td>
+            <td>
+                <div class="tbl-av">
+                    <div class="mini-av" style="background:${st.bg};color:${st.c}">${avIn}</div>
+                    <div><div class="tbl-name" style="font-size:13px">${r.estudiante_nombre}</div></div>
+                </div>
+            </td>
+            <td class="td-mono">${r.matricula||'—'}</td>
+            <td class="td-mono" style="color:var(--sky);font-size:10px">${r.uid}</td>
+            <td><span class="badge ${r.tipo_raw}">${r.tipo_raw==='aceptado'?'Aceptado':r.tipo_raw==='ya_escaneado'?'Repetido':'Rebote'}</span></td>
+            <td style="font-size:11px;color:var(--tx-muted)">${r.mensaje||'—'}</td>
+        </tr>`;
+    }).join('');
+
+    renderPagination(d.total, page, REG_POR_PAGINA);
+}
+
+function renderPagination(total, page, perPage) {
+    const totalPages = Math.ceil(total/perPage);
+    const pag = document.getElementById('reg-pagination');
+    if (totalPages <= 1) { pag.innerHTML=''; return; }
+
+    let html = `<button class="page-btn" onclick="cargarRegistros(${page-1})" ${page<=1?'disabled':''}>Anterior</button>`;
+    const start = Math.max(1, page-2);
+    const end   = Math.min(totalPages, page+2);
+    if (start>1) html+=`<button class="page-btn" onclick="cargarRegistros(1)">1</button>${start>2?'<span class="page-info">...</span>':''}`;
+    for(let i=start;i<=end;i++) html+=`<button class="page-btn${i===page?' active':''}" onclick="cargarRegistros(${i})">${i}</button>`;
+    if (end<totalPages) html+=`${end<totalPages-1?'<span class="page-info">...</span>':''}<button class="page-btn" onclick="cargarRegistros(${totalPages})">${totalPages}</button>`;
+    html+=`<button class="page-btn" onclick="cargarRegistros(${page+1})" ${page>=totalPages?'disabled':''}>Siguiente</button>`;
+    html+=`<span class="page-info">${total} registros</span>`;
+    pag.innerHTML = html;
+}
+
+function exportarRegistros() {
+    const fecha = document.getElementById('f-fecha-reg').value || new Date().toISOString().slice(0,10);
+    window.location.href = `/api/export/registros?fecha=${fecha}`;
+}
+
+// ── RFID ADMIN ─────────────────────────────────────────────────
+let ultimoScanUID = null;
+
+async function checkUltimoScan() {
+    const r = await fetch('/api/rfid/ultimo-scan');
+    const d = await r.json();
+    if (!d.success || !d.scan) return;
+    document.getElementById('scan-uid').textContent  = d.scan.uid;
+    document.getElementById('scan-time').textContent = fmt(d.scan.timestamp);
+    ultimoScanUID = d.scan.uid;
+    document.getElementById('btn-asignar-scan').style.display='block';
+}
+
+function asignarUltimoScan() {
+    if (!ultimoScanUID) return;
+    abrirModalTarj();
+    document.getElementById('tarj-uid').value = ultimoScanUID;
+}
+
+async function cargarDesconocidos() {
+    const panel = document.getElementById('panel-desc');
+    const r = await fetch('/api/rfid/desconocidos');
+    const d = await r.json();
+    if (!d.success || !d.desconocidos.length) {
+        panel.innerHTML='<div class="empty"><div class="empty-txt">Sin UIDs desconocidos</div></div>'; return;
+    }
+    panel.innerHTML = d.desconocidos.map(x=>`
+        <div class="uid-row">
+            <div>
+                <div class="uid-val">${x.uid}</div>
+                <div class="uid-meta">${x.veces} escaneo(s) — ${fmt(x.ultimo_scan)}</div>
+            </div>
+            <div style="display:flex;gap:6px">
+                <button class="btn btn-primary btn-sm" onclick="usarUID('${x.uid}')">Asignar</button>
+                <button class="btn btn-secondary btn-sm" onclick="verHistUID('${x.uid}')">Historial</button>
+            </div>
+        </div>`).join('');
+}
+
+function usarUID(uid) { abrirModalTarj(); document.getElementById('tarj-uid').value=uid; }
+function verHistUID(uid) { document.getElementById('h-uid').value=uid; cargarHistorial(); }
+
+async function cargarHistorial() {
+    const uid   = document.getElementById('h-uid').value.trim();
+    if (!uid) return;
+    const panel = document.getElementById('panel-hist');
+    const r     = await fetch(`/api/rfid/historial/${encodeURIComponent(uid)}`);
+    const d     = await r.json();
+    if (!d.success || !d.historial.length) {
+        panel.innerHTML='<div class="empty"><div class="empty-txt">Sin registros para este UID</div></div>'; return;
+    }
+    panel.innerHTML = d.historial.map(h=>`
+        <div class="uid-row">
+            <div>
+                <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--tx)">${h.nombre||'Desconocido'}</div>
+                <div class="uid-meta">${fmt(h.timestamp)}</div>
+            </div>
+            <span class="badge ${h.tipo_raw||''}">${h.tipo_raw||'—'}</span>
+        </div>`).join('');
+}
+
+async function runMigrate() {
+    const r=await fetch('/api/migrate',{method:'POST'});
+    const d=await r.json();
+    toast(d.success?'Migracion completada':'Error en migracion',d.success);
+}
+
+// ── ANALYTICS ──────────────────────────────────────────────────
+async function cargarAnalytics() {
+    const r = await fetch('/api/analytics');
+    const d = await r.json();
+    if (!d.success) return toast('Error al cargar analitica',false);
+    const a = d.analytics;
+
+    // KPIs
+    const stats = await (await fetch('/api/estadisticas')).json();
+    const s     = stats.stats;
+    const tasa  = s.estudiantes_activos > 0
+        ? Math.round((s.aceptados_hoy / s.estudiantes_activos) * 100)
+        : 0;
+
+    document.getElementById('k-hoy').textContent     = s.aceptados_hoy;
+    document.getElementById('k-hoy-sub').textContent = `de ${s.estudiantes_activos} estudiantes activos`;
+    document.getElementById('k-tasa').textContent    = tasa + '%';
+    document.getElementById('k-bar').style.width     = tasa + '%';
+    document.getElementById('k-mes').textContent     = a.mes_total || '—';
+    document.getElementById('k-mes-sub').textContent = new Date().toLocaleDateString('es-MX',{month:'long',year:'numeric'});
+
+    // 7 días
+    mkChart('c-dias','bar',{
+        labels: a.asistencia_7dias.map(x=>x.fecha.slice(5)),
+        datasets:[{label:'Aceptados',data:a.asistencia_7dias.map(x=>x.total),
+            backgroundColor:'rgba(34,151,211,.4)',borderColor:'#2297D3',borderWidth:1.5,borderRadius:3}]
+    },{plugins:{legend:{display:false}}});
+
+    // Carrera
+    const colors=['rgba(34,151,211,.7)','rgba(0,130,138,.7)','rgba(232,160,32,.7)','rgba(143,22,46,.7)','rgba(54,57,135,.7)'];
+    mkChart('c-carrera','doughnut',{
+        labels:a.por_carrera.map(x=>x.carrera),
+        datasets:[{data:a.por_carrera.map(x=>x.alumnos),backgroundColor:colors,borderWidth:1,borderColor:'#141E2E'}]
+    });
+
+    // Por hora
+    const hAll=Array.from({length:24},(_,i)=>i);
+    const hMap=Object.fromEntries(a.por_hora.map(x=>[x.hora,x.total]));
+    mkChart('c-horas','bar',{
+        labels:hAll.map(h=>`${String(h).padStart(2,'0')}h`),
+        datasets:[{label:'Accesos',data:hAll.map(h=>hMap[h]||0),
+            backgroundColor:'rgba(0,130,138,.4)',borderColor:'#00828A',borderWidth:1,borderRadius:2}]
+    },{plugins:{legend:{display:false}}});
+
+    // Top
+    document.getElementById('t-top').innerHTML = a.top_estudiantes.map((e,i)=>`
+        <tr><td class="td-mono" style="font-size:10px">${i+1}</td>
+            <td style="font-size:12px">${e.nombre}</td>
+            <td style="text-align:center">${e.semestre||'—'}</td>
+            <td class="td-mono" style="color:var(--sky);font-weight:700">${e.visitas}</td>
+        </tr>`).join('');
+
+    // Ausentes hoy — estudiantes activos sin registro aceptado hoy
+    const studR = await fetch('/api/estudiantes?semestre=');
+    const studD = await studR.json();
+    const hoy   = new Date().toISOString().slice(0,10);
+    const regR  = await fetch(`/api/registros?fecha=${hoy}&estado=aceptado&limit=500`);
+    const regD  = await regR.json();
+    const presentes = new Set((regD.registros||[]).map(r=>r.matricula));
+    const ausentes  = (studD.estudiantes||[]).filter(e=>e.estado==='activo' && !presentes.has(e.matricula));
+
+    const absList = document.getElementById('absent-list');
+    if (!ausentes.length) {
+        absList.innerHTML='<div class="empty"><div class="empty-txt">Todos presentes</div></div>';
+    } else {
+        absList.innerHTML = ausentes.slice(0,20).map(e=>{
+            const ini=getInitials(e.nombre,e.apellido_paterno);
+            const st=avatarStyle(e.nombre+e.apellido_paterno);
+            return `<div class="absent-row">
+                <div class="mini-av" style="background:${st.bg};color:${st.c};width:28px;height:28px;font-size:10px">${ini}</div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-family:var(--display);font-size:13px;font-weight:700;color:var(--tx)">${e.nombre} ${e.apellido_paterno||''}</div>
+                    <div class="td-mono" style="font-size:8px;color:var(--tx-muted)">${e.matricula} — Sem. ${e.semestre||'?'}</div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+}
+
+// ── INIT ───────────────────────────────────────────────────────
+updateClock();
+setInterval(updateClock, 1000);
+document.getElementById('f-fecha-reg').value = new Date().toISOString().slice(0,10);
+
+cargarStats();
+cargarEstudiantes();
+cargarTarjetas();
+cargarRegistros(1);
+setInterval(cargarStats, 30000);
+</script>
+</body>
+</html>

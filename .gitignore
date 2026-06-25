@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+*.db
+*.sqlite3
+.env
+*.log
+crud/__pycache__/
+dashboard/__pycache__/
+shared/__pycache__/

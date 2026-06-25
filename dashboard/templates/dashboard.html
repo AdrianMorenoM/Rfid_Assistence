@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Acceso RFID - TecNM ITSOEH</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;600;700;800&family=Barlow:wght@400;600&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+:root {
+  --tecnm:#11366A;--tecnm-light:#1A4A8A;--tecnm-08:rgba(17,54,106,.08);
+  --tecnm-15:rgba(17,54,106,.15);--tecnm-30:rgba(17,54,106,.30);
+  --itsoeh-t:#00828A;--itsoeh-t-12:rgba(0,130,138,.12);--itsoeh-t-30:rgba(0,130,138,.30);
+  --itsoeh-i:#363987;--itsoeh-i-12:rgba(54,57,135,.12);
+  --sky:#2297D3;--sky-12:rgba(34,151,211,.12);--sky-25:rgba(34,151,211,.25);--sky-50:rgba(34,151,211,.5);
+  --crimson:#8F162E;--crimson-12:rgba(143,22,46,.12);--crimson-25:rgba(143,22,46,.25);
+  --navy-c:#22318C;--navy-c-12:rgba(34,49,140,.12);--navy-c-25:rgba(34,49,140,.25);
+  --amber:#E8A020;--amber-12:rgba(232,160,32,.12);--amber-25:rgba(232,160,32,.25);
+  --bg:#05090F;--s1:#080E17;--s2:#0D1520;--s3:#121C2B;--s4:#182437;
+  --brd:#141E2E;--brd2:#1C2A3E;--brd3:#253649;
+  --tx:#E4EBF5;--tx-dim:#7A90AD;--tx-muted:#3D5268;--tx-ghost:#1B2A3A;
+  --display:'Barlow Condensed',sans-serif;--body:'Barlow',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-family:var(--body);-webkit-font-smoothing:antialiased}
+
+/* ── HEADER ── */
+header{position:relative;z-index:20;flex-shrink:0;height:96px;display:grid;grid-template-columns:290px 1fr 260px;background:var(--s1);border-bottom:1px solid var(--brd);overflow:hidden}
+header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;z-index:10;background:linear-gradient(90deg,var(--tecnm) 0%,var(--tecnm) 25%,var(--itsoeh-t) 25%,var(--itsoeh-t) 50%,var(--sky) 50%,var(--sky) 75%,var(--crimson) 75%,var(--crimson) 100%)}
+.h-left{position:relative;background:var(--tecnm);display:flex;flex-direction:column;justify-content:center;padding:14px 20px 12px 22px;gap:5px;z-index:5}
+.h-left::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-60deg,rgba(255,255,255,.025) 0px,rgba(255,255,255,.025) 1px,transparent 1px,transparent 22px);pointer-events:none}
+.h-left::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--itsoeh-t),transparent)}
+.h-tecnm-badge{font-family:var(--display);font-size:22px;font-weight:800;color:#FFF;letter-spacing:2px;text-transform:uppercase}
+.h-left-divider{height:1px;background:linear-gradient(90deg,rgba(255,255,255,.15),transparent)}
+.h-itsoeh-row{display:flex;align-items:center;gap:8px}
+.h-itsoeh-dot{width:6px;height:6px;border-radius:50%;background:var(--itsoeh-t);flex-shrink:0}
+.h-itsoeh-name{font-family:var(--display);font-size:11px;font-weight:600;color:rgba(255,255,255,.8);letter-spacing:1px;text-transform:uppercase}
+.h-center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;position:relative;z-index:4;padding:14px 16px 12px}
+.h-center::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 80% at 50% 50%,rgba(34,151,211,.05) 0%,transparent 100%);pointer-events:none}
+.h-sys-title{display:flex;align-items:baseline;gap:10px;font-family:var(--display);text-transform:uppercase;line-height:1}
+.h-sys-ctrl{font-size:26px;font-weight:300;color:var(--tx);letter-spacing:4px}
+.h-sys-de{font-size:14px;font-weight:300;color:var(--tx-dim);letter-spacing:3px}
+.h-sys-acceso{font-size:26px;font-weight:800;color:var(--tx);letter-spacing:4px}
+.h-accent-bar{width:100%;height:1.5px;background:linear-gradient(90deg,transparent 0%,var(--tecnm-30) 15%,var(--sky-50) 40%,var(--sky-50) 60%,var(--tecnm-30) 85%,transparent 100%)}
+.h-rfid-badge{font-family:var(--display);font-size:14px;font-weight:700;color:var(--sky);letter-spacing:3px;text-transform:uppercase}
+.h-right{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:2px;padding:14px 22px 12px 14px;position:relative;z-index:4}
+.h-right::before{content:'';position:absolute;top:3px;bottom:0;left:0;width:1px;background:linear-gradient(180deg,transparent,var(--brd3),transparent)}
+#clock{font-family:var(--mono);font-size:26px;font-weight:700;color:#FFF;letter-spacing:3px;font-variant-numeric:tabular-nums}
+#dateline{font-family:var(--body);font-size:8px;color:var(--tx-muted);letter-spacing:1.5px;text-transform:uppercase;text-align:right}
+.h-live{display:flex;align-items:center;gap:5px;margin-top:2px}
+.h-live-dot{width:6px;height:6px;border-radius:50%;background:var(--itsoeh-t);animation:live-pulse 1.8s ease-in-out infinite}
+@keyframes live-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.7)}}
+.h-live-txt{font-family:var(--mono);font-size:8px;color:var(--itsoeh-t);letter-spacing:2.5px;text-transform:uppercase}
+
+/* ── STATUS BAR ── */
+.sbar{height:28px;display:flex;align-items:center;gap:10px;padding:0 20px;background:var(--bg);border-bottom:1px solid var(--brd);flex-shrink:0;position:relative;z-index:10;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--tx-muted);overflow:hidden}
+.sbar::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--tecnm)}
+.sb-active{display:flex;align-items:center;gap:6px;color:var(--itsoeh-t);font-weight:600;letter-spacing:1px}
+.sb-dot{width:5px;height:5px;border-radius:50%;background:var(--itsoeh-t);animation:live-pulse 1.8s ease-in-out infinite}
+.sb-sep{color:var(--brd3)}
+.sb-chip{font-size:8px;padding:2px 8px;letter-spacing:1.5px;background:var(--s2);border:1px solid var(--brd2);border-radius:2px}
+#sbar-msg{transition:color .3s}
+#sbar-msg.c-sky{color:var(--sky)}
+#sbar-msg.c-amber{color:var(--amber)}
+#sbar-msg.c-crimson{color:var(--crimson)}
+#sbar-msg.c-teal{color:var(--itsoeh-t)}
+
+/* ── NOON FLASH ── */
+.noon-banner{
+  position:fixed;top:0;left:0;right:0;z-index:2000;
+  background:linear-gradient(90deg,var(--tecnm),var(--itsoeh-t));
+  height:3px;transform:scaleX(0);transform-origin:left;
+  transition:transform .6s ease;
+}
+.noon-banner.show{transform:scaleX(1)}
+
+/* ── MAIN GRID ── */
+main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124px);position:relative;z-index:1}
+
+/* ── LEFT PANEL — MÉTRICAS ── */
+.lp{background:var(--s1);border-right:1px solid var(--brd);padding:16px 14px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;overflow-x:hidden}
+.lp::-webkit-scrollbar{width:3px}
+.lp::-webkit-scrollbar-thumb{background:var(--brd3);border-radius:2px}
+
+.sec-lbl{font-family:var(--display);font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--tx-muted);display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-shrink:0}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--brd2)}
+.sec-lbl::before{content:'';width:2px;height:10px;flex-shrink:0;background:var(--sky);border-radius:1px}
+
+.stat-blk{background:var(--s2);border:1px solid var(--brd);border-radius:4px;padding:10px 14px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden;flex-shrink:0}
+.stat-blk::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--sb-ac)}
+.stat-blk.st-sky{--sb-ac:var(--sky)}
+.stat-blk.st-navy{--sb-ac:var(--navy-c)}
+.stat-blk.st-amber{--sb-ac:var(--amber)}
+.stat-blk.st-crimson{--sb-ac:var(--crimson)}
+.stat-blk.st-teal{--sb-ac:var(--itsoeh-t)}
+.stat-num-wrap{display:flex;flex-direction:column;align-items:flex-start;flex-shrink:0;min-width:44px}
+.stat-num{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--sb-ac);line-height:1;font-variant-numeric:tabular-nums;transition:color .4s}
+.stat-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.stat-name{font-family:var(--display);font-size:13px;font-weight:700;color:var(--tx);letter-spacing:.5px}
+.stat-desc{font-family:var(--body);font-size:9px;color:var(--tx-muted);letter-spacing:1px}
+
+/* UID repetidos list */
+.rep-list{display:flex;flex-direction:column;gap:4px;margin-top:2px}
+.rep-item{background:var(--s2);border:1px solid var(--brd);border-left:3px solid var(--amber);border-radius:3px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;animation:log-in .3s ease}
+.rep-uid{font-family:var(--mono);font-size:9px;color:var(--tx-dim);letter-spacing:1px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rep-nombre{font-family:var(--display);font-size:10px;color:var(--tx-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px}
+.rep-count{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber);margin-left:8px;flex-shrink:0}
+.rep-empty{font-family:var(--mono);font-size:8px;color:var(--tx-ghost);letter-spacing:1px;padding:6px 0;text-align:center}
+
+/* ── CENTER PANEL ── */
+.cp{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 28px;gap:20px;position:relative;overflow:hidden}
+.cp::before{content:'';position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle,rgba(34,151,211,.06) 1px,transparent 1px);background-size:32px 32px;mask-image:radial-gradient(ellipse 65% 65% at 50% 50%,black,transparent)}
+.cp::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:300px;height:200px;background:radial-gradient(ellipse at center bottom,var(--tecnm-15),transparent 70%);pointer-events:none}
+
+.scan-frame{width:210px;height:210px;position:relative;flex-shrink:0}
+.s-ring-outer{position:absolute;inset:0;border-radius:50%;border:1px solid var(--brd2)}
+.s-ring-mid{position:absolute;inset:22px;border-radius:50%;border:1px solid var(--brd)}
+.s-ring-spin{position:absolute;inset:0;border-radius:50%;border:2px solid transparent;border-top-color:var(--sky);border-right-color:var(--sky-25);animation:ring-spin 3s linear infinite;opacity:.55}
+.s-ring-spin-rev{position:absolute;inset:10px;border-radius:50%;border:1px solid transparent;border-bottom-color:var(--itsoeh-t-30);animation:ring-spin 5s linear infinite reverse;opacity:.4}
+@keyframes ring-spin{to{transform:rotate(360deg)}}
+.s-pulse{position:absolute;inset:0;border-radius:50%;border:1px solid var(--sky-25);opacity:0}
+.s-pulse:nth-child(5){animation:s-pulse-a 3.5s ease-out infinite}
+.s-pulse:nth-child(6){animation:s-pulse-a 3.5s ease-out infinite 1.16s}
+.s-pulse:nth-child(7){animation:s-pulse-a 3.5s ease-out infinite 2.32s}
+@keyframes s-pulse-a{0%{transform:scale(.45);opacity:.55}100%{transform:scale(1.55);opacity:0}}
+.s-corner{position:absolute;width:16px;height:16px}
+.s-corner::before{content:'';position:absolute;background:var(--cc,var(--sky))}
+.s-corner::after{content:'';position:absolute;background:var(--cc,var(--sky))}
+.s-corner.tl{top:10px;left:10px;--cc:var(--sky)}
+.s-corner.tr{top:10px;right:10px;--cc:var(--crimson)}
+.s-corner.bl{bottom:10px;left:10px;--cc:var(--itsoeh-t)}
+.s-corner.br{bottom:10px;right:10px;--cc:var(--tecnm-light)}
+.s-corner::before{width:100%;height:1.5px;top:0;left:0}
+.s-corner::after{width:1.5px;height:100%;top:0;left:0}
+.s-corner.tr::before{left:auto;right:0}
+.s-corner.tr::after{left:auto;right:0}
+.s-corner.bl::before{top:auto;bottom:0}
+.s-corner.bl::after{top:auto;bottom:0}
+.s-corner.br::before{top:auto;bottom:0;right:0;left:auto}
+.s-corner.br::after{top:auto;bottom:0;right:0;left:auto}
+.s-flash{position:absolute;inset:0;border-radius:50%;opacity:0}
+.s-flash.go{animation:s-flash-a .45s ease-out forwards}
+@keyframes s-flash-a{0%{opacity:.45;transform:scale(.4)}100%{opacity:0;transform:scale(1.7)}}
+.s-core{position:absolute;inset:36px;border-radius:50%;background:var(--s1);border:1px solid var(--brd2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.s-icon{width:38px;height:38px;stroke:var(--sky);fill:none;stroke-width:1.5;stroke-linecap:round;opacity:.75}
+.s-hint{font-family:var(--display);font-size:9px;font-weight:600;color:var(--tx-muted);letter-spacing:3px;text-transform:uppercase}
+
+.mini-metrics{width:100%;max-width:330px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.mm-cell{background:var(--s2);border:1px solid var(--brd);border-radius:4px;padding:9px 8px 7px;display:flex;flex-direction:column;gap:2px;border-bottom:2px solid var(--mm-ac)}
+.mm-cell.mm-sky{--mm-ac:var(--sky)}
+.mm-cell.mm-teal{--mm-ac:var(--itsoeh-t)}
+.mm-cell.mm-amber{--mm-ac:var(--amber)}
+.mm-cell.mm-crimson{--mm-ac:var(--crimson)}
+.mm-num{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--mm-ac);line-height:1;font-variant-numeric:tabular-nums;transition:color .4s}
+.mm-lbl{font-family:var(--mono);font-size:7px;color:var(--tx-muted);letter-spacing:1.5px}
+
+.log-entry.no-anim { animation: none; }
+
+/* ── AVATAR LOG ── */
+.log-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+.log-scroll::-webkit-scrollbar{width:3px}
+.log-scroll::-webkit-scrollbar-thumb{background:var(--brd3);border-radius:2px}
+
+.av-entry{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:5px;
+  background:var(--s2);border:1px solid var(--brd);
+  position:relative;overflow:hidden;flex-shrink:0;
+  animation:log-in .25s cubic-bezier(.16,1,.3,1);
+  cursor:default;transition:background .15s;
+}
+.av-entry:hover{background:var(--s3)}
+.av-entry::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ae-ac)}
+.av-entry.aceptado{--ae-ac:var(--sky)}
+.av-entry.ya_escaneado{--ae-ac:var(--amber)}
+.av-entry.rebote{--ae-ac:var(--crimson)}
+.av-entry.no-anim{animation:none}
+
+.av-circle{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:13px;font-weight:800;
+  flex-shrink:0;overflow:hidden;border:1px solid rgba(255,255,255,.08);
+}
+.av-circle img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+
+.av-info{flex:1;min-width:0}
+.av-name{font-family:var(--display);font-size:13px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.av-mat{font-family:var(--mono);font-size:8px;color:var(--tx-muted);letter-spacing:1px;margin-top:1px}
+
+.av-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.av-time{font-family:var(--mono);font-size:9px;color:var(--tx-muted);font-variant-numeric:tabular-nums}
+.av-badge{font-family:var(--mono);font-size:7px;letter-spacing:1px;padding:2px 6px;border-radius:2px;text-transform:uppercase}
+.av-badge.aceptado{background:var(--sky-12);color:var(--sky)}
+.av-badge.ya_escaneado{background:var(--amber-12);color:var(--amber)}
+.av-badge.rebote{background:var(--crimson-12);color:var(--crimson)}
+
+/* ── READER STATUS ── */
+.reader-status{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px;background:var(--s2);border:1px solid var(--brd);
+  border-radius:4px;flex-shrink:0;
+}
+.reader-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.reader-dot.on{background:var(--itsoeh-t);animation:live-pulse 1.8s ease-in-out infinite}
+.reader-dot.off{background:var(--crimson)}
+.reader-label{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;text-transform:uppercase}
+.reader-label.on{color:var(--itsoeh-t)}
+.reader-label.off{color:var(--crimson)}
+
+/* ── HOURLY CHART ── */
+.hourly-wrap{flex-shrink:0}
+.hourly-bars{
+  display:flex;align-items:flex-end;gap:2px;
+  height:50px;padding:0;
+}
+.hbar{
+  flex:1;border-radius:2px 2px 0 0;
+  min-height:2px;transition:height .4s ease;
+  position:relative;cursor:default;
+}
+.hbar-fill{width:100%;border-radius:2px 2px 0 0;transition:height .4s ease}
+.hbar.current .hbar-fill{background:var(--sky) !important}
+.hourly-labels{
+  display:flex;justify-content:space-between;
+  margin-top:3px;
+}
+.hourly-lbl{font-family:var(--mono);font-size:6px;color:var(--tx-muted);letter-spacing:.5px}
+  font-family:var(--mono);font-size:8px;letter-spacing:1.5px;
+  color:var(--itsoeh-t);text-transform:uppercase;
+  display:none;align-items:center;gap:6px;padding:5px 0;
+}
+.noon-cleared.show{display:flex}
+
+/* ── RIGHT PANEL ── */
+.rp{background:var(--s1);border-left:1px solid var(--brd);padding:16px 12px;display:flex;flex-direction:column;overflow:hidden}
+.log-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.log-scroll::-webkit-scrollbar{width:3px}
+.log-scroll::-webkit-scrollbar-thumb{background:var(--brd3);border-radius:2px}
+.log-entry{background:var(--s2);border:1px solid var(--brd);border-radius:4px;padding:9px 12px;position:relative;overflow:hidden;flex-shrink:0;animation:log-in .3s cubic-bezier(.16,1,.3,1)}
+@keyframes log-in{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+.log-entry::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--le-ac)}
+.log-entry.aceptado{--le-ac:var(--sky)}
+.log-entry.ya_escaneado{--le-ac:var(--amber)}
+.log-entry.rebote{--le-ac:var(--crimson)}
+.log-entry.inactivo{--le-ac:var(--tx-muted)}
+.le-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.le-name{font-family:var(--display);font-size:14px;font-weight:700;color:var(--tx)}
+.le-badge{font-family:var(--mono);font-size:7px;letter-spacing:1.5px;padding:2px 7px;border-radius:2px;text-transform:uppercase;flex-shrink:0}
+.le-badge.aceptado{background:var(--sky-12);color:var(--sky)}
+.le-badge.ya_escaneado{background:var(--amber-12);color:var(--amber)}
+.le-badge.rebote{background:var(--crimson-12);color:var(--crimson)}
+.le-badge.inactivo{background:rgba(125,125,125,.12);color:var(--tx-muted)}
+.le-mat{font-family:var(--body);font-size:9px;color:var(--tx-muted)}
+.le-time{font-family:var(--mono);font-size:9px;color:var(--tx-muted);margin-top:3px;font-variant-numeric:tabular-nums}
+
+/* ── MODAL ── */
+.modal-bd{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(0,0,0,.80);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .1s ease;
+}
+.modal-bd.show{opacity:1;pointer-events:all}
+
+.modal-card{
+  width:480px;
+  background:var(--s1);
+  border-radius:10px;overflow:hidden;
+  box-shadow:0 40px 100px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.05);
+  transform:translateY(6px);
+  transition:transform .12s ease;
+}
+.modal-bd.show .modal-card{transform:translateY(0)}
+
+/* Barra superior gruesa */
+.mc-topbar{height:8px;width:100%}
+.mc-topbar.aceptado   {background:linear-gradient(90deg,#0066CC,var(--sky),#00C8FF)}
+.mc-topbar.ya_escaneado{background:linear-gradient(90deg,#B36000,var(--amber),#FFD060)}
+.mc-topbar.rebote     {background:linear-gradient(90deg,#6B0020,var(--crimson),#FF3355)}
+.mc-topbar.inactivo   {background:linear-gradient(90deg,var(--brd3),var(--tx-muted))}
+
+/* Cuerpo central */
+.mc-body{
+  padding:28px 32px 24px;
+  display:flex;flex-direction:column;align-items:center;
+  gap:16px;text-align:center;
+}
+
+/* Avatar grande */
+.mc-photo{
+  width:96px;height:96px;border-radius:50%;
+  overflow:hidden;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:34px;font-weight:800;
+  border:3px solid var(--mc-color);
+  background:rgba(0,0,0,.35);color:var(--mc-color);
+}
+.mc-photo img{width:100%;height:100%;object-fit:cover}
+.mc-photo.aceptado   {--mc-color:var(--sky)}
+.mc-photo.ya_escaneado{--mc-color:var(--amber)}
+.mc-photo.rebote     {--mc-color:var(--crimson)}
+.mc-photo.inactivo   {--mc-color:var(--tx-muted)}
+
+/* Badge de estado grande */
+.mc-status-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 20px;border-radius:6px;
+  font-family:var(--display);font-size:16px;font-weight:800;
+  letter-spacing:2px;text-transform:uppercase;
+}
+.mc-status-badge.aceptado   {background:var(--sky-12);color:var(--sky);border:1px solid var(--sky-25)}
+.mc-status-badge.ya_escaneado{background:var(--amber-12);color:var(--amber);border:1px solid var(--amber-25)}
+.mc-status-badge.rebote     {background:var(--crimson-12);color:var(--crimson);border:1px solid var(--crimson-25)}
+.mc-status-badge.inactivo   {background:rgba(125,125,125,.1);color:var(--tx-muted);border:1px solid rgba(125,125,125,.25)}
+.mc-status-dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+
+/* Nombre */
+.mc-name{
+  font-family:var(--display);font-size:30px;font-weight:800;
+  color:var(--tx);line-height:1.1;letter-spacing:.5px;
+}
+
+/* Info secundaria compacta */
+.mc-info-row{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;
+}
+.mc-info-chip{
+  font-family:var(--display);font-size:13px;font-weight:600;
+  color:var(--tx-dim);letter-spacing:.5px;
+  display:flex;align-items:center;gap:5px;
+}
+.mc-info-chip::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--brd3)}
+.mc-info-chip:first-child::before{display:none}
+
+/* Fila hora + UID */
+.mc-bottom-row{
+  width:100%;display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0 0;border-top:1px solid var(--brd);
+}
+.mc-hora-lbl,.mc-uid-lbl{font-family:var(--mono);font-size:8px;color:var(--tx-muted);letter-spacing:2px;text-transform:uppercase}
+.mc-hora-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--tx);letter-spacing:2px;font-variant-numeric:tabular-nums}
+.mc-uid-val{font-family:var(--mono);font-size:11px;color:var(--sky);letter-spacing:3px;text-align:right}
+
+/* Countdown */
+.mc-countdown{height:5px;background:var(--brd);position:relative;overflow:hidden}
+.mc-countdown-fill{position:absolute;top:0;left:0;bottom:0;width:100%;background:var(--mc-fill-color,var(--sky))}
+.mc-countdown-fill.aceptado   {--mc-fill-color:var(--sky)}
+.mc-countdown-fill.ya_escaneado{--mc-fill-color:var(--amber)}
+.mc-countdown-fill.rebote     {--mc-fill-color:var(--crimson)}
+.mc-countdown-fill.run{animation:countdown-shrink 7s linear forwards}
+@keyframes countdown-shrink{to{width:0%}}
+    </style>
+</head>
+<body>
+    <div class="noon-banner" id="noon-banner"></div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="h-left">
+            <div class="h-tecnm-badge">TECNM</div>
+            <div class="h-left-divider"></div>
+            <div class="h-itsoeh-row"><div class="h-itsoeh-dot"></div><div class="h-itsoeh-name">ITSOEH</div></div>
+        </div>
+        <div class="h-center">
+            <div class="h-sys-title">
+                <span class="h-sys-ctrl">CONTROL</span>
+                <span class="h-sys-de">DE</span>
+                <span class="h-sys-acceso">ACCESO</span>
+            </div>
+            <div class="h-accent-bar"></div>
+            <div class="h-rfid-badge">RFID</div>
+        </div>
+        <div class="h-right">
+            <div id="clock">--:--:--</div>
+            <div id="dateline">-- -- ----</div>
+            <div class="h-live"><div class="h-live-dot"></div><div class="h-live-txt">LIVE</div></div>
+        </div>
+    </header>
+
+    <!-- STATUS BAR -->
+    <div class="sbar">
+        <div class="sb-active"><div class="sb-dot"></div><span>SISTEMA ACTIVO</span></div>
+        <span class="sb-sep">|</span>
+        <span class="sb-chip">MONITOREO EN TIEMPO REAL</span>
+        <span class="sb-sep">|</span>
+        <span id="sbar-msg">ESPERANDO EVENTOS...</span>
+    </div>
+
+    <!-- MAIN -->
+    <main>
+        <!-- LEFT PANEL -->
+        <div class="lp">
+            <div class="sec-lbl">MÉTRICAS</div>
+
+            <div class="stat-blk st-sky">
+                <div class="stat-num-wrap"><div class="stat-num" id="stat-entradas">0</div></div>
+                <div class="stat-meta">
+                    <div class="stat-name">ACEPTADOS</div>
+                    <div class="stat-desc">Entradas válidas hoy</div>
+                </div>
+            </div>
+
+            <div class="stat-blk st-teal">
+                <div class="stat-num-wrap"><div class="stat-num" id="stat-activas">0</div></div>
+                <div class="stat-meta">
+                    <div class="stat-name">ACTIVAS</div>
+                    <div class="stat-desc">Tarjetas registradas</div>
+                </div>
+            </div>
+
+            <div class="stat-blk st-crimson">
+                <div class="stat-num-wrap"><div class="stat-num" id="stat-rebotes">0</div></div>
+                <div class="stat-meta">
+                    <div class="stat-name">REBOTES</div>
+                    <div class="stat-desc">UIDs desconocidos</div>
+                </div>
+            </div>
+
+            <!-- Estado del lector -->
+            <div class="sec-lbl" style="margin-top:6px">LECTOR</div>
+            <div class="reader-status" id="reader-status">
+                <div class="reader-dot off" id="reader-dot"></div>
+                <div class="reader-label off" id="reader-label">VERIFICANDO</div>
+                <div style="flex:1"></div>
+                <div class="noon-cd-val" id="noon-countdown" style="font-family:var(--mono);font-size:11px;color:var(--tx-muted);letter-spacing:1px;font-variant-numeric:tabular-nums">--:--:--</div>
+            </div>
+
+            <!-- Accesos por hora -->
+            <div class="sec-lbl" style="margin-top:6px">ACCESOS HOY</div>
+            <div class="hourly-wrap">
+                <div class="hourly-bars" id="hourly-bars"></div>
+                <div class="hourly-labels">
+                    <span class="hourly-lbl">00h</span>
+                    <span class="hourly-lbl">06h</span>
+                    <span class="hourly-lbl">12h</span>
+                    <span class="hourly-lbl">18h</span>
+                    <span class="hourly-lbl">23h</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER PANEL -->
+        <div class="cp">
+            <div class="scan-frame">
+                <div class="s-ring-outer"></div>
+                <div class="s-ring-mid"></div>
+                <div class="s-ring-spin"></div>
+                <div class="s-ring-spin-rev"></div>
+                <div class="s-pulse"></div>
+                <div class="s-pulse"></div>
+                <div class="s-pulse"></div>
+                <div class="s-flash" id="s-flash"></div>
+                <div class="s-corner tl"></div>
+                <div class="s-corner tr"></div>
+                <div class="s-corner bl"></div>
+                <div class="s-corner br"></div>
+                <div class="s-core">
+                    <svg class="s-icon" viewBox="0 0 24 24">
+                        <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z"/>
+                        <path d="M2 7L12 12"/><path d="M12 22V12"/><path d="M22 7L12 12"/>
+                    </svg>
+                    <div class="s-hint">RFID</div>
+                </div>
+            </div>
+
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL — HISTORIAL -->
+        <div class="rp">
+            <div class="sec-lbl">HISTORIAL</div>
+            <div class="log-scroll" id="log-scroll">
+                <div class="av-entry" style="justify-content:center;border:none;background:transparent">
+                    <div class="av-mat" style="text-align:center;padding:12px 0">Esperando eventos...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL -->
+    <div class="modal-bd" id="modal-bd">
+        <div class="modal-card">
+            <div class="mc-topbar" id="mc-topbar"></div>
+            <div class="mc-body">
+                <div class="mc-photo" id="mc-photo"></div>
+                <div class="mc-status-badge" id="mc-status-badge">
+                    <div class="mc-status-dot"></div>
+                    <span id="mc-badge-text">---</span>
+                </div>
+                <div class="mc-name" id="mc-name">---</div>
+                <div class="mc-info-row">
+                    <div class="mc-info-chip" id="mc-matricula">---</div>
+                    <div class="mc-info-chip" id="mc-carrera">---</div>
+                    <div class="mc-info-chip" id="mc-semestre"></div>
+                </div>
+                <div class="mc-bottom-row">
+                    <div>
+                        <div class="mc-hora-lbl">HORA</div>
+                        <div class="mc-hora-val" id="mc-hora">--:--:--</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div class="mc-uid-lbl">UID</div>
+                        <div class="mc-uid-val" id="mc-uid">---</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mc-countdown">
+                <div class="mc-countdown-fill" id="mc-countdown-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ════════════════════════════════════════
+    //  RELOJ + RESET AL MEDIODÍA
+    // ════════════════════════════════════════
+    let noonResetDone = false;
+
+    function updateClock() {
+        const now = new Date();
+        const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+        const time = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        const date = now.toLocaleDateString('es-MX', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
+        document.getElementById('clock').textContent = time;
+        document.getElementById('dateline').textContent = date.toUpperCase();
+
+        // Reset al finalizar el día (00:00:00)
+        if (h === 0 && m === 0 && s === 0 && !noonResetDone) {
+            noonResetDone = true;
+            clearAtNoon();
+        }
+        // Permitir nuevo reset al día siguiente
+        if (h === 1 && m === 0) noonResetDone = false;
+    }
+
+    function clearAtNoon() {
+        // Banner flash
+        const banner = document.getElementById('noon-banner');
+        banner.classList.add('show');
+        setTimeout(() => banner.classList.remove('show'), 1500);
+
+        // Reset contadores UI
+        ['stat-entradas','stat-activas','stat-rebotes',
+         'mm-entradas','mm-activas','mm-escaneados','mm-rebotes']
+          .forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '0'; });
+
+        // Limpiar log
+        document.getElementById('log-scroll').innerHTML =
+            '<div class="av-entry" style="justify-content:center;border:none;background:transparent"><div class="av-mat" style="text-align:center;padding:12px 0">Control reiniciado — nuevo dia</div></div>';
+
+        loggedIds.clear();
+
+        // Limpiar repetidos
+        document.getElementById('rep-list').innerHTML = '<div class="rep-empty">Sin repeticiones hoy</div>';
+
+        // Cerrar modal si está abierto
+        closeModal();
+
+        // Status bar
+        const sbar = document.getElementById('sbar-msg');
+        sbar.textContent = 'RESET MEDIODÍA — SISTEMA REINICIADO';
+        sbar.className = 'c-teal';
+        setTimeout(() => { sbar.textContent = 'ESPERANDO EVENTOS...'; sbar.className = ''; }, 5000);
+
+        // Limpiar localStorage
+        localStorage.removeItem('rfid_last_event');
+        lastEventId = 0;
+    }
+
+    // ════════════════════════════════════════
+    //  MODAL
+    // ════════════════════════════════════════
+    let modalTimeout = null;
+    let scanCooldown = false;
+    const MODAL_DURATION = 7000; // ms — coincide con la animación del countdown
+
+    function showModal(data, autoClose = true) {
+        const modal = document.getElementById('modal-bd');
+        const flash = document.getElementById('s-flash');
+        const est   = data.estado;
+
+        flash.classList.add('go');
+        setTimeout(() => flash.classList.remove('go'), 450);
+
+        // Barra superior
+        document.getElementById('mc-topbar').className = `mc-topbar ${est}`;
+
+        // Foto / avatar redondo
+        const photo = document.getElementById('mc-photo');
+        photo.className = `mc-photo ${est}`;
+        if (data.foto) {
+            const ini = getInitials(data.nombre || '');
+            photo.innerHTML = `<img src="${data.foto}" alt=""
+                style="width:100%;height:100%;object-fit:cover;border-radius:50%"
+                onerror="this.outerHTML='<span>${ini}</span>'">`;
+        } else {
+            photo.textContent = getInitials(data.nombre || '');
+        }
+
+        // Badge estado
+        document.getElementById('mc-status-badge').className = `mc-status-badge ${est}`;
+        document.getElementById('mc-badge-text').textContent =
+            est === 'aceptado'     ? 'ACCESO PERMITIDO'  :
+            est === 'ya_escaneado' ? 'YA REGISTRADO'     :
+            est === 'rebote'       ? 'ACCESO DENEGADO'   : est.toUpperCase();
+
+        // Datos
+        document.getElementById('mc-name').textContent      = data.nombre    || 'DESCONOCIDO';
+        document.getElementById('mc-matricula').textContent = data.matricula  || 'N/A';
+        document.getElementById('mc-carrera').textContent   = data.carrera    || '';
+        document.getElementById('mc-uid').textContent       = data.uid        || 'N/A';
+
+        const hora = new Date(data.timestamp || Date.now());
+        document.getElementById('mc-hora').textContent = hora.toLocaleTimeString('es-MX', {hour12:false});
+
+        // Countdown bar
+        const fill = document.getElementById('mc-countdown-fill');
+        fill.className = `mc-countdown-fill ${est}`;
+        fill.classList.remove('run');
+
+        // Status bar
+        const sbar = document.getElementById('sbar-msg');
+        sbar.textContent = data.mensaje || est.toUpperCase();
+        sbar.className   = est === 'aceptado'     ? 'c-sky'    :
+                           est === 'ya_escaneado'  ? 'c-amber'  :
+                           est === 'rebote'         ? 'c-crimson': 'c-teal';
+
+        modal.classList.add('show');
+
+        if (modalTimeout) clearTimeout(modalTimeout);
+
+        if (autoClose) {
+            setTimeout(() => fill.classList.add('run'), 10);
+            scanCooldown = true;
+            modalTimeout = setTimeout(() => {
+                closeModal();
+            }, MODAL_DURATION);
+        }
+
+        localStorage.setItem('rfid_last_event', JSON.stringify({...data, _savedAt: Date.now()}));
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('modal-bd');
+        const fill  = document.getElementById('mc-countdown-fill');
+        const sbar  = document.getElementById('sbar-msg');
+
+        modal.classList.remove('show');
+        fill.classList.remove('run');
+        sbar.textContent = 'ESPERANDO EVENTOS...';
+        sbar.className   = '';
+
+        if (modalTimeout) { clearTimeout(modalTimeout); modalTimeout = null; }
+        scanCooldown = false;
+    }
+
+    // Cerrar modal al hacer clic en el fondo
+    document.getElementById('modal-bd').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    // ════════════════════════════════════════
+    //  RESTAURAR ÚLTIMO EVENTO AL RECARGAR
+    // ════════════════════════════════════════
+    function restoreLastEvent() {
+        try {
+            const raw = localStorage.getItem('rfid_last_event');
+            if (!raw) return;
+            const ev  = JSON.parse(raw);
+            const age = Date.now() - (ev._savedAt || 0);
+
+            // Solo restaurar si fue en las últimas 2 horas y es del mismo día
+            const today = new Date().toDateString();
+            const evDay = new Date(ev.timestamp).toDateString();
+            if (age < 7200000 && today === evDay) {
+                showModal(ev, false); // sin auto-close al restaurar
+            }
+        } catch (e) { /* ignorar */ }
+    }
+
+    // ════════════════════════════════════════
+    //  SONIDOS
+    // ════════════════════════════════════════
+    let audioCtx = null;
+    function getAudioCtx() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        return audioCtx;
+    }
+
+    function playSound(tipo) {
+        try {
+            const ctx  = getAudioCtx();
+            const gain = ctx.createGain();
+            gain.connect(ctx.destination);
+
+            if (tipo === 'aceptado') {
+                // Dos tonos ascendentes — acceso OK
+                [880, 1320].forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.12);
+                    osc.connect(gain);
+                    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+                    osc.start(ctx.currentTime + i * 0.12);
+                    osc.stop(ctx.currentTime + i * 0.12 + 0.2);
+                });
+            } else if (tipo === 'rebote') {
+                // Tono bajo descendente — acceso denegado
+                const osc = ctx.createOscillator();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(320, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.35);
+            } else {
+                // ya_escaneado — tono corto neutro
+                const osc = ctx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(660, ctx.currentTime);
+                osc.connect(gain);
+                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.2);
+            }
+        } catch(e) { /* silencioso si el navegador bloquea audio */ }
+    }
+
+    // ════════════════════════════════════════
+    //  COUNTDOWN AL MEDIODÍA
+    // ════════════════════════════════════════
+    function updateNoonCountdown() {
+        const now   = new Date();
+        const reset = new Date();
+        reset.setHours(23, 59, 59, 999);
+        const diff = reset - now;
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        const el = document.getElementById('noon-countdown');
+        if (el) el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    // ════════════════════════════════════════
+    //  LOG SIN PARPADEO
+    // ════════════════════════════════════════
+    const loggedIds = new Set();
+
+    // ════════════════════════════════════════
+    //  AVATAR HELPERS
+    // ════════════════════════════════════════
+    function getInitials(nombre) {
+        const parts = (nombre || '').trim().split(' ');
+        const a = parts[0] ? parts[0][0].toUpperCase() : '';
+        const b = parts[1] ? parts[1][0].toUpperCase() : '';
+        return a + b || '?';
+    }
+
+    function avatarStyle(nombre) {
+        const palettes = [
+            { bg:'rgba(34,151,211,.18)', color:'#2297D3' },
+            { bg:'rgba(0,130,138,.18)',  color:'#00828A' },
+            { bg:'rgba(54,57,135,.18)',  color:'#363987' },
+            { bg:'rgba(34,49,140,.18)',  color:'#22318C' },
+            { bg:'rgba(17,54,106,.25)',  color:'#1A4A8A' },
+        ];
+        let hash = 0;
+        for (let c of nombre) hash = c.charCodeAt(0) + ((hash << 5) - hash);
+        return palettes[Math.abs(hash) % palettes.length];
+    }
+
+    // ════════════════════════════════════════
+    //  HOURLY CHART
+    // ════════════════════════════════════════
+    function renderHourlyChart(hourly) {
+        const c = document.getElementById('hourly-bars');
+        if (!c || !hourly) return;
+        const max = Math.max(...hourly, 1);
+        const cur = new Date().getHours();
+        c.innerHTML = hourly.map((v, h) => {
+            const pct   = (v / max) * 46;
+            const ht    = Math.max(pct, v > 0 ? 3 : 1);
+            const bg    = h === cur ? 'var(--sky)' : v > 0 ? 'var(--sky-25)' : 'var(--brd2)';
+            return `<div class="hbar${h===cur?' current':''}" title="${String(h).padStart(2,'0')}:00 — ${v} acceso${v!==1?'s':''}">
+                        <div class="hbar-fill" style="height:${ht}px;background:${bg}"></div>
+                    </div>`;
+        }).join('');
+    }
+
+    // ════════════════════════════════════════
+    //  READER STATUS
+    // ════════════════════════════════════════
+    function updateReaderStatus(ok) {
+        const dot   = document.getElementById('reader-dot');
+        const label = document.getElementById('reader-label');
+        if (!dot || !label) return;
+        dot.className   = `reader-dot ${ok ? 'on' : 'off'}`;
+        label.className = `reader-label ${ok ? 'on' : 'off'}`;
+        label.textContent = ok ? 'LECTOR ACTIVO' : 'LECTOR INACTIVO';
+    }
+
+    // ════════════════════════════════════════
+    //  AVATAR LOG
+    // ════════════════════════════════════════
+    function updateLog(eventos) {
+        if (!eventos || eventos.length === 0) return;
+        const scroll = document.getElementById('log-scroll');
+
+        if (loggedIds.size === 0) {
+            scroll.innerHTML = '';
+            eventos.forEach(ev => {
+                loggedIds.add(ev.id);
+                scroll.appendChild(buildAvatarEntry(ev, false));
+            });
+            return;
+        }
+
+        const nuevos = eventos.filter(ev => !loggedIds.has(ev.id));
+        nuevos.forEach(ev => {
+            loggedIds.add(ev.id);
+            scroll.prepend(buildAvatarEntry(ev, true));
+        });
+        while (scroll.children.length > 25) scroll.removeChild(scroll.lastChild);
+    }
+
+    function buildAvatarEntry(ev, animate) {
+        const entry   = document.createElement('div');
+        entry.className = `av-entry ${ev.estado}${animate ? '' : ' no-anim'}`;
+
+        const t   = new Date(ev.timestamp);
+        const ts  = t.toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit', hour12:false});
+        const ini = getInitials(ev.nombre);
+        const st  = avatarStyle(ev.nombre);
+
+        const statusLabel = ev.estado === 'aceptado'    ? 'ACEPTADO'  :
+                           ev.estado === 'ya_escaneado' ? 'REPETIDO'  : 'REBOTE';
+
+        let avInner;
+        if (ev.foto) {
+            avInner = `<img src="${ev.foto}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%"
+                           onerror="this.outerHTML='<span>${ini}</span>'">`;
+        } else {
+            avInner = `<span>${ini}</span>`;
+        }
+
+        entry.innerHTML = `
+            <div class="av-circle" style="background:${st.bg};color:${st.color}">${avInner}</div>
+            <div class="av-info">
+                <div class="av-name">${ev.nombre}</div>
+                <div class="av-mat">${ev.matricula}</div>
+            </div>
+            <div class="av-right">
+                <div class="av-time">${ts}</div>
+                <div class="av-badge ${ev.estado}">${statusLabel}</div>
+            </div>`;
+        return entry;
+    }
+
+    async function updateStats() {
+        try {
+            const res  = await fetch('/api/estado');
+            const data = await res.json();
+            if (!data.success) return;
+
+            const s = data.stats;
+            document.getElementById('stat-entradas').textContent = s.entradas_hoy;
+            document.getElementById('stat-activas').textContent  = s.tarjetas_activas;
+            document.getElementById('stat-rebotes').textContent  = s.rebotes_hoy;
+
+            updateLog(data.eventos);
+            renderHourlyChart(data.hourly);
+            updateReaderStatus(data.reader_ok);
+
+            // Sincronizar lastEventId en carga inicial para no perder el primer evento
+            if (data.eventos && data.eventos.length > 0 && lastEventId === 0) {
+                lastEventId = `${data.eventos[0].uid}-${data.eventos[0].timestamp}`;
+            }
+        } catch (e) { console.error('Stats error:', e); }
+    }
+
+    // ════════════════════════════════════════
+    //  POLLING NUEVOS EVENTOS
+    // ════════════════════════════════════════
+    let lastEventId = 0;
+
+    async function checkNewEvents() {
+        if (scanCooldown) return;
+        try {
+            const res  = await fetch('/api/estado');
+            const data = await res.json();
+            if (!data.success || !data.eventos || data.eventos.length === 0) return;
+
+            const latest  = data.eventos[0];
+            const eventId = `${latest.uid}-${latest.timestamp}`;
+
+            if (eventId !== lastEventId) {
+                lastEventId = eventId;
+                showModal(latest);
+            }
+        } catch (e) { /* silencioso */ }
+    }
+
+    // ════════════════════════════════════════
+    //  INIT
+    // ════════════════════════════════════════
+    updateClock();
+    updateNoonCountdown();
+    setInterval(updateClock, 1000);
+    setInterval(updateNoonCountdown, 1000);
+
+    updateStats();
+    setInterval(updateStats, 3000);
+    setInterval(checkNewEvents, 1000);
+
+    // Restaurar último evento
+    setTimeout(restoreLastEvent, 100);
+
+    // Activar audio en primer click (requerido por navegadores)
+    document.addEventListener('click', () => { try { getAudioCtx().resume(); } catch(e){} }, {once: true});
+    </script>
+</body>
+</html>
