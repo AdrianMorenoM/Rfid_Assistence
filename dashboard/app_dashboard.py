@@ -66,13 +66,16 @@ def api_estado():
             GROUP BY ra.uid HAVING COUNT(*)>1 ORDER BY veces DESC LIMIT 10
         """, (hoy,)).fetchall()
 
+        # ← MEJORA: orden determinista añadiendo ra.id DESC
         evs = conn.execute(f"""
             SELECT ra.id, ra.uid, ra.timestamp, ra.{col} as tr,
                    COALESCE(ra.mensaje,'') as mensaje,
                    e.nombre, e.apellido_paterno, e.matricula, e.carrera, e.foto
             FROM registros_asistencia ra
             LEFT JOIN estudiantes e ON ra.id_estudiante=e.id
-            WHERE {ff} ORDER BY ra.timestamp DESC LIMIT 30
+            WHERE {ff}
+            ORDER BY ra.timestamp DESC, ra.id DESC
+            LIMIT 30
         """, (hoy,)).fetchall()
 
         eventos = []

@@ -144,19 +144,9 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
 .s-icon{width:38px;height:38px;stroke:var(--sky);fill:none;stroke-width:1.5;stroke-linecap:round;opacity:.75}
 .s-hint{font-family:var(--display);font-size:9px;font-weight:600;color:var(--tx-muted);letter-spacing:3px;text-transform:uppercase}
 
-.mini-metrics{width:100%;max-width:330px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.mm-cell{background:var(--s2);border:1px solid var(--brd);border-radius:4px;padding:9px 8px 7px;display:flex;flex-direction:column;gap:2px;border-bottom:2px solid var(--mm-ac)}
-.mm-cell.mm-sky{--mm-ac:var(--sky)}
-.mm-cell.mm-teal{--mm-ac:var(--itsoeh-t)}
-.mm-cell.mm-amber{--mm-ac:var(--amber)}
-.mm-cell.mm-crimson{--mm-ac:var(--crimson)}
-.mm-num{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--mm-ac);line-height:1;font-variant-numeric:tabular-nums;transition:color .4s}
-.mm-lbl{font-family:var(--mono);font-size:7px;color:var(--tx-muted);letter-spacing:1.5px}
-
-.log-entry.no-anim { animation: none; }
-
-/* ── AVATAR LOG ── */
-.log-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+/* ── RIGHT PANEL ── */
+.rp{background:var(--s1);border-left:1px solid var(--brd);padding:16px 12px;display:flex;flex-direction:column;overflow:hidden}
+.log-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
 .log-scroll::-webkit-scrollbar{width:3px}
 .log-scroll::-webkit-scrollbar-thumb{background:var(--brd3);border-radius:2px}
 
@@ -225,33 +215,6 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
   margin-top:3px;
 }
 .hourly-lbl{font-family:var(--mono);font-size:6px;color:var(--tx-muted);letter-spacing:.5px}
-  font-family:var(--mono);font-size:8px;letter-spacing:1.5px;
-  color:var(--itsoeh-t);text-transform:uppercase;
-  display:none;align-items:center;gap:6px;padding:5px 0;
-}
-.noon-cleared.show{display:flex}
-
-/* ── RIGHT PANEL ── */
-.rp{background:var(--s1);border-left:1px solid var(--brd);padding:16px 12px;display:flex;flex-direction:column;overflow:hidden}
-.log-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
-.log-scroll::-webkit-scrollbar{width:3px}
-.log-scroll::-webkit-scrollbar-thumb{background:var(--brd3);border-radius:2px}
-.log-entry{background:var(--s2);border:1px solid var(--brd);border-radius:4px;padding:9px 12px;position:relative;overflow:hidden;flex-shrink:0;animation:log-in .3s cubic-bezier(.16,1,.3,1)}
-@keyframes log-in{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
-.log-entry::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--le-ac)}
-.log-entry.aceptado{--le-ac:var(--sky)}
-.log-entry.ya_escaneado{--le-ac:var(--amber)}
-.log-entry.rebote{--le-ac:var(--crimson)}
-.log-entry.inactivo{--le-ac:var(--tx-muted)}
-.le-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
-.le-name{font-family:var(--display);font-size:14px;font-weight:700;color:var(--tx)}
-.le-badge{font-family:var(--mono);font-size:7px;letter-spacing:1.5px;padding:2px 7px;border-radius:2px;text-transform:uppercase;flex-shrink:0}
-.le-badge.aceptado{background:var(--sky-12);color:var(--sky)}
-.le-badge.ya_escaneado{background:var(--amber-12);color:var(--amber)}
-.le-badge.rebote{background:var(--crimson-12);color:var(--crimson)}
-.le-badge.inactivo{background:rgba(125,125,125,.12);color:var(--tx-muted)}
-.le-mat{font-family:var(--body);font-size:9px;color:var(--tx-muted)}
-.le-time{font-family:var(--mono);font-size:9px;color:var(--tx-muted);margin-top:3px;font-variant-numeric:tabular-nums}
 
 /* ── MODAL ── */
 .modal-bd{
@@ -279,7 +242,6 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
 .mc-topbar.aceptado   {background:linear-gradient(90deg,#0066CC,var(--sky),#00C8FF)}
 .mc-topbar.ya_escaneado{background:linear-gradient(90deg,#B36000,var(--amber),#FFD060)}
 .mc-topbar.rebote     {background:linear-gradient(90deg,#6B0020,var(--crimson),#FF3355)}
-.mc-topbar.inactivo   {background:linear-gradient(90deg,var(--brd3),var(--tx-muted))}
 
 /* Cuerpo central */
 .mc-body{
@@ -301,9 +263,7 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
 .mc-photo.aceptado   {--mc-color:var(--sky)}
 .mc-photo.ya_escaneado{--mc-color:var(--amber)}
 .mc-photo.rebote     {--mc-color:var(--crimson)}
-.mc-photo.inactivo   {--mc-color:var(--tx-muted)}
 
-/* Badge de estado grande */
 .mc-status-badge{
   display:inline-flex;align-items:center;gap:8px;
   padding:8px 20px;border-radius:6px;
@@ -313,7 +273,6 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
 .mc-status-badge.aceptado   {background:var(--sky-12);color:var(--sky);border:1px solid var(--sky-25)}
 .mc-status-badge.ya_escaneado{background:var(--amber-12);color:var(--amber);border:1px solid var(--amber-25)}
 .mc-status-badge.rebote     {background:var(--crimson-12);color:var(--crimson);border:1px solid var(--crimson-25)}
-.mc-status-badge.inactivo   {background:rgba(125,125,125,.1);color:var(--tx-muted);border:1px solid rgba(125,125,125,.25)}
 .mc-status-dot{width:8px;height:8px;border-radius:50%;background:currentColor}
 
 /* Nombre */
@@ -402,11 +361,12 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
                 </div>
             </div>
 
+            <!-- MEJORA: texto "Tarjetas activas" -->
             <div class="stat-blk st-teal">
                 <div class="stat-num-wrap"><div class="stat-num" id="stat-activas">0</div></div>
                 <div class="stat-meta">
                     <div class="stat-name">ACTIVAS</div>
-                    <div class="stat-desc">Tarjetas registradas</div>
+                    <div class="stat-desc">Tarjetas activas</div>
                 </div>
             </div>
 
@@ -464,8 +424,6 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
                     <div class="s-hint">RFID</div>
                 </div>
             </div>
-
-            </div>
         </div>
 
         <!-- RIGHT PANEL — HISTORIAL -->
@@ -512,82 +470,90 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
         </div>
     </div>
 
+    <!-- SCRIPT OPTIMIZADO -->
     <script>
-    // ════════════════════════════════════════
-    //  RELOJ + RESET AL MEDIODÍA
-    // ════════════════════════════════════════
-    let noonResetDone = false;
+    'use strict';
+    // ═══════════════════════════════════════════════
+    //  CONFIGURACIÓN DE INTERVALOS
+    // ═══════════════════════════════════════════════
+    const POLL_NEW_EVENT_MS  = 800;   // sondeo rápido con /api/ultimo-evento
+    const POLL_STATS_MS      = 5000;  // sondeo completo cada 5 segundos (alivia la BD)
 
+    // ═══════════════════════════════════════════════
+    //  ESTADO GLOBAL
+    // ═══════════════════════════════════════════════
+    let lastEventId      = '';                // uid + timestamp del último evento mostrado
+    let modalTimeout     = null;
+    let scanCooldown     = false;
+    const MODAL_DURATION = 7000;             // ms
+    const loggedIds      = new Set();        // ids de eventos ya mostrados en el log
+    let noonResetDone    = false;
+
+    // ═══════════════════════════════════════════════
+    //  RELOJ + RESET AL MEDIODÍA
+    // ═══════════════════════════════════════════════
     function updateClock() {
         const now = new Date();
         const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
         const time = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-        const date = now.toLocaleDateString('es-MX', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
-        document.getElementById('clock').textContent = time;
+        const date = now.toLocaleDateString('es-MX', {
+            weekday:'short', day:'2-digit', month:'short', year:'numeric'
+        });
+        document.getElementById('clock').textContent    = time;
         document.getElementById('dateline').textContent = date.toUpperCase();
 
-        // Reset al finalizar el día (00:00:00)
+        // Reset al final del día (00:00:00)
         if (h === 0 && m === 0 && s === 0 && !noonResetDone) {
             noonResetDone = true;
             clearAtNoon();
         }
-        // Permitir nuevo reset al día siguiente
         if (h === 1 && m === 0) noonResetDone = false;
     }
 
     function clearAtNoon() {
-        // Banner flash
         const banner = document.getElementById('noon-banner');
         banner.classList.add('show');
         setTimeout(() => banner.classList.remove('show'), 1500);
 
-        // Reset contadores UI
-        ['stat-entradas','stat-activas','stat-rebotes',
-         'mm-entradas','mm-activas','mm-escaneados','mm-rebotes']
-          .forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '0'; });
+        ['stat-entradas','stat-activas','stat-rebotes'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '0';
+        });
 
-        // Limpiar log
-        document.getElementById('log-scroll').innerHTML =
-            '<div class="av-entry" style="justify-content:center;border:none;background:transparent"><div class="av-mat" style="text-align:center;padding:12px 0">Control reiniciado — nuevo dia</div></div>';
+        const log = document.getElementById('log-scroll');
+        log.innerHTML = `<div class="av-entry" style="justify-content:center;border:none;background:transparent">
+            <div class="av-mat" style="text-align:center;padding:12px 0">Control reiniciado — nuevo día</div>
+        </div>`;
 
         loggedIds.clear();
-
-        // Limpiar repetidos
         document.getElementById('rep-list').innerHTML = '<div class="rep-empty">Sin repeticiones hoy</div>';
-
-        // Cerrar modal si está abierto
         closeModal();
 
-        // Status bar
         const sbar = document.getElementById('sbar-msg');
         sbar.textContent = 'RESET MEDIODÍA — SISTEMA REINICIADO';
         sbar.className = 'c-teal';
         setTimeout(() => { sbar.textContent = 'ESPERANDO EVENTOS...'; sbar.className = ''; }, 5000);
 
-        // Limpiar localStorage
         localStorage.removeItem('rfid_last_event');
-        lastEventId = 0;
+        lastEventId = '';
     }
 
-    // ════════════════════════════════════════
+    // ═══════════════════════════════════════════════
     //  MODAL
-    // ════════════════════════════════════════
-    let modalTimeout = null;
-    let scanCooldown = false;
-    const MODAL_DURATION = 7000; // ms — coincide con la animación del countdown
-
+    // ═══════════════════════════════════════════════
     function showModal(data, autoClose = true) {
         const modal = document.getElementById('modal-bd');
         const flash = document.getElementById('s-flash');
-        const est   = data.estado;
+        const est   = data.estado || 'rebote';
 
+        // Flash en el centro
         flash.classList.add('go');
         setTimeout(() => flash.classList.remove('go'), 450);
 
         // Barra superior
         document.getElementById('mc-topbar').className = `mc-topbar ${est}`;
 
-        // Foto / avatar redondo
+        // Foto / iniciales
         const photo = document.getElementById('mc-photo');
         photo.className = `mc-photo ${est}`;
         if (data.foto) {
@@ -599,28 +565,25 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
             photo.textContent = getInitials(data.nombre || '');
         }
 
-        // Badge estado
         document.getElementById('mc-status-badge').className = `mc-status-badge ${est}`;
         document.getElementById('mc-badge-text').textContent =
             est === 'aceptado'     ? 'ACCESO PERMITIDO'  :
             est === 'ya_escaneado' ? 'YA REGISTRADO'     :
             est === 'rebote'       ? 'ACCESO DENEGADO'   : est.toUpperCase();
 
-        // Datos
         document.getElementById('mc-name').textContent      = data.nombre    || 'DESCONOCIDO';
-        document.getElementById('mc-matricula').textContent = data.matricula  || 'N/A';
-        document.getElementById('mc-carrera').textContent   = data.carrera    || '';
-        document.getElementById('mc-uid').textContent       = data.uid        || 'N/A';
-
+        document.getElementById('mc-matricula').textContent = data.matricula || 'N/A';
+        document.getElementById('mc-carrera').textContent   = data.carrera   || '';
+        document.getElementById('mc-uid').textContent       = data.uid       || 'N/A';
         const hora = new Date(data.timestamp || Date.now());
-        document.getElementById('mc-hora').textContent = hora.toLocaleTimeString('es-MX', {hour12:false});
+        document.getElementById('mc-hora').textContent = hora.toLocaleTimeString('es-MX', { hour12:false });
 
-        // Countdown bar
+        // Barra de cuenta atrás
         const fill = document.getElementById('mc-countdown-fill');
         fill.className = `mc-countdown-fill ${est}`;
         fill.classList.remove('run');
 
-        // Status bar
+        // Status bar inferior
         const sbar = document.getElementById('sbar-msg');
         sbar.textContent = data.mensaje || est.toUpperCase();
         sbar.className   = est === 'aceptado'     ? 'c-sky'    :
@@ -639,7 +602,11 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
             }, MODAL_DURATION);
         }
 
-        localStorage.setItem('rfid_last_event', JSON.stringify({...data, _savedAt: Date.now()}));
+        // [MEJORA] Feedback sonoro
+        playSound(est);
+
+        // Guardar en localStorage para restaurar tras recarga
+        localStorage.setItem('rfid_last_event', JSON.stringify({ ...data, _savedAt: Date.now() }));
     }
 
     function closeModal() {
@@ -656,33 +623,13 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
         scanCooldown = false;
     }
 
-    // Cerrar modal al hacer clic en el fondo
     document.getElementById('modal-bd').addEventListener('click', function(e) {
         if (e.target === this) closeModal();
     });
 
-    // ════════════════════════════════════════
-    //  RESTAURAR ÚLTIMO EVENTO AL RECARGAR
-    // ════════════════════════════════════════
-    function restoreLastEvent() {
-        try {
-            const raw = localStorage.getItem('rfid_last_event');
-            if (!raw) return;
-            const ev  = JSON.parse(raw);
-            const age = Date.now() - (ev._savedAt || 0);
-
-            // Solo restaurar si fue en las últimas 2 horas y es del mismo día
-            const today = new Date().toDateString();
-            const evDay = new Date(ev.timestamp).toDateString();
-            if (age < 7200000 && today === evDay) {
-                showModal(ev, false); // sin auto-close al restaurar
-            }
-        } catch (e) { /* ignorar */ }
-    }
-
-    // ════════════════════════════════════════
+    // ═══════════════════════════════════════════════
     //  SONIDOS
-    // ════════════════════════════════════════
+    // ═══════════════════════════════════════════════
     let audioCtx = null;
     function getAudioCtx() {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -690,13 +637,13 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
     }
 
     function playSound(tipo) {
+        // [MEJORA] Ahora se llama cada vez que se muestra el modal
         try {
             const ctx  = getAudioCtx();
             const gain = ctx.createGain();
             gain.connect(ctx.destination);
 
             if (tipo === 'aceptado') {
-                // Dos tonos ascendentes — acceso OK
                 [880, 1320].forEach((freq, i) => {
                     const osc = ctx.createOscillator();
                     osc.type = 'sine';
@@ -708,7 +655,6 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
                     osc.stop(ctx.currentTime + i * 0.12 + 0.2);
                 });
             } else if (tipo === 'rebote') {
-                // Tono bajo descendente — acceso denegado
                 const osc = ctx.createOscillator();
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(320, ctx.currentTime);
@@ -719,7 +665,6 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
                 osc.start(ctx.currentTime);
                 osc.stop(ctx.currentTime + 0.35);
             } else {
-                // ya_escaneado — tono corto neutro
                 const osc = ctx.createOscillator();
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(660, ctx.currentTime);
@@ -732,14 +677,13 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
         } catch(e) { /* silencioso si el navegador bloquea audio */ }
     }
 
-    // ════════════════════════════════════════
+    // ═══════════════════════════════════════════════
     //  COUNTDOWN AL MEDIODÍA
-    // ════════════════════════════════════════
+    // ═══════════════════════════════════════════════
     function updateNoonCountdown() {
         const now   = new Date();
-        const reset = new Date();
-        reset.setHours(23, 59, 59, 999);
-        const diff = reset - now;
+        const reset = new Date(); reset.setHours(23, 59, 59, 999);
+        const diff  = reset - now;
         const h = Math.floor(diff / 3600000);
         const m = Math.floor((diff % 3600000) / 60000);
         const s = Math.floor((diff % 60000) / 1000);
@@ -747,19 +691,12 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
         if (el) el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     }
 
-    // ════════════════════════════════════════
-    //  LOG SIN PARPADEO
-    // ════════════════════════════════════════
-    const loggedIds = new Set();
-
-    // ════════════════════════════════════════
-    //  AVATAR HELPERS
-    // ════════════════════════════════════════
+    // ═══════════════════════════════════════════════
+    //  AVATAR + LOG
+    // ═══════════════════════════════════════════════
     function getInitials(nombre) {
         const parts = (nombre || '').trim().split(' ');
-        const a = parts[0] ? parts[0][0].toUpperCase() : '';
-        const b = parts[1] ? parts[1][0].toUpperCase() : '';
-        return a + b || '?';
+        return (parts[0]?.[0] || '') + (parts[1]?.[0] || '') || '?';
     }
 
     function avatarStyle(nombre) {
@@ -775,76 +712,21 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
         return palettes[Math.abs(hash) % palettes.length];
     }
 
-    // ════════════════════════════════════════
-    //  HOURLY CHART
-    // ════════════════════════════════════════
-    function renderHourlyChart(hourly) {
-        const c = document.getElementById('hourly-bars');
-        if (!c || !hourly) return;
-        const max = Math.max(...hourly, 1);
-        const cur = new Date().getHours();
-        c.innerHTML = hourly.map((v, h) => {
-            const pct   = (v / max) * 46;
-            const ht    = Math.max(pct, v > 0 ? 3 : 1);
-            const bg    = h === cur ? 'var(--sky)' : v > 0 ? 'var(--sky-25)' : 'var(--brd2)';
-            return `<div class="hbar${h===cur?' current':''}" title="${String(h).padStart(2,'0')}:00 — ${v} acceso${v!==1?'s':''}">
-                        <div class="hbar-fill" style="height:${ht}px;background:${bg}"></div>
-                    </div>`;
-        }).join('');
-    }
-
-    // ════════════════════════════════════════
-    //  READER STATUS
-    // ════════════════════════════════════════
-    function updateReaderStatus(ok) {
-        const dot   = document.getElementById('reader-dot');
-        const label = document.getElementById('reader-label');
-        if (!dot || !label) return;
-        dot.className   = `reader-dot ${ok ? 'on' : 'off'}`;
-        label.className = `reader-label ${ok ? 'on' : 'off'}`;
-        label.textContent = ok ? 'LECTOR ACTIVO' : 'LECTOR INACTIVO';
-    }
-
-    // ════════════════════════════════════════
-    //  AVATAR LOG
-    // ════════════════════════════════════════
-    function updateLog(eventos) {
-        if (!eventos || eventos.length === 0) return;
-        const scroll = document.getElementById('log-scroll');
-
-        if (loggedIds.size === 0) {
-            scroll.innerHTML = '';
-            eventos.forEach(ev => {
-                loggedIds.add(ev.id);
-                scroll.appendChild(buildAvatarEntry(ev, false));
-            });
-            return;
-        }
-
-        const nuevos = eventos.filter(ev => !loggedIds.has(ev.id));
-        nuevos.forEach(ev => {
-            loggedIds.add(ev.id);
-            scroll.prepend(buildAvatarEntry(ev, true));
-        });
-        while (scroll.children.length > 25) scroll.removeChild(scroll.lastChild);
-    }
-
-    function buildAvatarEntry(ev, animate) {
-        const entry   = document.createElement('div');
-        entry.className = `av-entry ${ev.estado}${animate ? '' : ' no-anim'}`;
-
-        const t   = new Date(ev.timestamp);
-        const ts  = t.toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit', hour12:false});
-        const ini = getInitials(ev.nombre);
-        const st  = avatarStyle(ev.nombre);
-
-        const statusLabel = ev.estado === 'aceptado'    ? 'ACEPTADO'  :
-                           ev.estado === 'ya_escaneado' ? 'REPETIDO'  : 'REBOTE';
+    function buildAvatarEntry(ev) {
+        const entry = document.createElement('div');
+        entry.className = `av-entry ${ev.estado}`;
+        const t    = new Date(ev.timestamp);
+        const ts   = t.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit', hour12:false });
+        const ini  = getInitials(ev.nombre);
+        const st   = avatarStyle(ev.nombre);
+        const statusLabel = ev.estado === 'aceptado' ? 'ACEPTADO' :
+                            ev.estado === 'ya_escaneado' ? 'REPETIDO' : 'REBOTE';
 
         let avInner;
         if (ev.foto) {
-            avInner = `<img src="${ev.foto}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%"
-                           onerror="this.outerHTML='<span>${ini}</span>'">`;
+            avInner = `<img src="${ev.foto}" alt=""
+                style="width:100%;height:100%;object-fit:cover;border-radius:50%"
+                onerror="this.outerHTML='<span>${ini}</span>'">`;
         } else {
             avInner = `<span>${ini}</span>`;
         }
@@ -862,6 +744,71 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
         return entry;
     }
 
+    // [MEJORA] Añade un evento al log inmediatamente, sin esperar el refresco de stats
+    function addEventToLog(ev) {
+        const scroll = document.getElementById('log-scroll');
+        const entry  = buildAvatarEntry(ev);
+        scroll.prepend(entry);
+        while (scroll.children.length > 25) scroll.removeChild(scroll.lastChild);
+    }
+
+    // Reconstrucción total del log (primer arranque)
+    function initLog(eventos) {
+        const scroll = document.getElementById('log-scroll');
+        scroll.innerHTML = '';
+        eventos.forEach(ev => {
+            loggedIds.add(ev.id);
+            scroll.appendChild(buildAvatarEntry(ev));
+        });
+        while (scroll.children.length > 25) scroll.removeChild(scroll.lastChild);
+    }
+
+    // [MEJORA] Ahora solo se usa para refrescar el log cuando aún no hay nada
+    function syncLog(eventos) {
+        if (loggedIds.size === 0) {
+            initLog(eventos);
+            return;
+        }
+        const nuevos = eventos.filter(ev => !loggedIds.has(ev.id));
+        nuevos.forEach(ev => {
+            loggedIds.add(ev.id);
+            addEventToLog(ev);
+        });
+    }
+
+    // ═══════════════════════════════════════════════
+    //  GRÁFICO DE BARRAS (HORAS)
+    // ═══════════════════════════════════════════════
+    function renderHourlyChart(hourly) {
+        const c = document.getElementById('hourly-bars');
+        if (!c || !hourly) return;
+        const max = Math.max(...hourly, 1);
+        const cur = new Date().getHours();
+        c.innerHTML = hourly.map((v, h) => {
+            const pct = (v / max) * 46;
+            const ht  = Math.max(pct, v > 0 ? 3 : 1);
+            const bg  = h === cur ? 'var(--sky)' : v > 0 ? 'var(--sky-25)' : 'var(--brd2)';
+            return `<div class="hbar${h===cur?' current':''}" title="${String(h).padStart(2,'0')}:00 — ${v} acceso${v!==1?'s':''}">
+                        <div class="hbar-fill" style="height:${ht}px;background:${bg}"></div>
+                    </div>`;
+        }).join('');
+    }
+
+    // ═══════════════════════════════════════════════
+    //  ESTADO DEL LECTOR
+    // ═══════════════════════════════════════════════
+    function updateReaderStatus(ok) {
+        const dot   = document.getElementById('reader-dot');
+        const label = document.getElementById('reader-label');
+        if (!dot || !label) return;
+        dot.className   = `reader-dot ${ok ? 'on' : 'off'}`;
+        label.className = `reader-label ${ok ? 'on' : 'off'}`;
+        label.textContent = ok ? 'LECTOR ACTIVO' : 'LECTOR INACTIVO';
+    }
+
+    // ═══════════════════════════════════════════════
+    //  REFRESCO DE ESTADÍSTICAS (cada 5 s)
+    // ═══════════════════════════════════════════════
     async function updateStats() {
         try {
             const res  = await fetch('/api/estado');
@@ -873,56 +820,83 @@ main{display:grid;grid-template-columns:240px 1fr 320px;height:calc(100vh - 124p
             document.getElementById('stat-activas').textContent  = s.tarjetas_activas;
             document.getElementById('stat-rebotes').textContent  = s.rebotes_hoy;
 
-            updateLog(data.eventos);
+            syncLog(data.eventos);
             renderHourlyChart(data.hourly);
             updateReaderStatus(data.reader_ok);
 
-            // Sincronizar lastEventId en carga inicial para no perder el primer evento
-            if (data.eventos && data.eventos.length > 0 && lastEventId === 0) {
-                lastEventId = `${data.eventos[0].uid}-${data.eventos[0].timestamp}`;
+            // Sincronizar el lastEventId si no está inicializado
+            if (!lastEventId && data.eventos && data.eventos.length > 0) {
+                const first = data.eventos[0];
+                lastEventId = `${first.uid}-${first.timestamp}`;
             }
         } catch (e) { console.error('Stats error:', e); }
     }
 
-    // ════════════════════════════════════════
-    //  POLLING NUEVOS EVENTOS
-    // ════════════════════════════════════════
-    let lastEventId = 0;
-
+    // ═══════════════════════════════════════════════
+    //  SONDAJE RÁPIDO DE ÚLTIMO EVENTO (cada 0.8 s)
+    //  [MEJORA] Ahora usa /api/ultimo-evento y actualiza el log al instante
+    // ═══════════════════════════════════════════════
     async function checkNewEvents() {
-        if (scanCooldown) return;
+        if (scanCooldown) return;          // respetar el cooldown mientras el modal está abierto
         try {
-            const res  = await fetch('/api/estado');
+            const res  = await fetch('/api/ultimo-evento');
             const data = await res.json();
-            if (!data.success || !data.eventos || data.eventos.length === 0) return;
+            if (!data.success || !data.evento) return;
 
-            const latest  = data.eventos[0];
-            const eventId = `${latest.uid}-${latest.timestamp}`;
+            const evento  = data.evento;
+            const eventId = `${evento.uid}-${evento.timestamp}`;
 
             if (eventId !== lastEventId) {
                 lastEventId = eventId;
-                showModal(latest);
+                showModal(evento);
+                // [MEJORA] Insertar en el log inmediatamente
+                if (!loggedIds.has(evento.id)) {
+                    loggedIds.add(evento.id);
+                    addEventToLog(evento);
+                }
             }
         } catch (e) { /* silencioso */ }
     }
 
-    // ════════════════════════════════════════
-    //  INIT
-    // ════════════════════════════════════════
+    // ═══════════════════════════════════════════════
+    //  RESTAURAR ÚLTIMO EVENTO AL RECARGAR
+    // ═══════════════════════════════════════════════
+    function restoreLastEvent() {
+        try {
+            const raw = localStorage.getItem('rfid_last_event');
+            if (!raw) return;
+            const ev  = JSON.parse(raw);
+            const age = Date.now() - (ev._savedAt || 0);
+            const today = new Date().toDateString();
+            const evDay = new Date(ev.timestamp).toDateString();
+            if (age < 7200000 && today === evDay) {
+                showModal(ev, false);
+            }
+        } catch (e) { /* ignorar */ }
+    }
+
+    // ═══════════════════════════════════════════════
+    //  INICIALIZACIÓN
+    // ═══════════════════════════════════════════════
     updateClock();
     updateNoonCountdown();
     setInterval(updateClock, 1000);
     setInterval(updateNoonCountdown, 1000);
 
+    // Carga inicial
     updateStats();
-    setInterval(updateStats, 3000);
-    setInterval(checkNewEvents, 1000);
+    setInterval(updateStats, POLL_STATS_MS);        // cada 5 segundos
 
-    // Restaurar último evento
+    // Sondeo ligero y rápido
+    setInterval(checkNewEvents, POLL_NEW_EVENT_MS);
+
+    // Restaurar evento tras recarga
     setTimeout(restoreLastEvent, 100);
 
-    // Activar audio en primer click (requerido por navegadores)
-    document.addEventListener('click', () => { try { getAudioCtx().resume(); } catch(e){} }, {once: true});
+    // Activar AudioContext al primer clic
+    document.addEventListener('click', () => {
+        try { getAudioCtx().resume(); } catch(e) {}
+    }, { once: true });
     </script>
 </body>
 </html>
